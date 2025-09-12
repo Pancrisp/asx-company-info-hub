@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+:root {
+  /* ASX Dashboard Color Scheme */
+  --primary-green: #20705c;
+  --background-gray: #f8f9fa;
+  --card-white: #ffffff;
+  --border-gray: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --positive-green: #198754;
+  --negative-red: #dc3545;
+  --hover-green: #1a5a4a;
+}
+
+@theme inline {
+  --color-background: var(--background-gray);
+  --color-foreground: var(--text-primary);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+
+/* Remove dark mode for this application */
+body {
+  background: var(--background-gray);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Custom styles for the ASX dashboard */
+.single-column {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+/* Card styles */
+.card {
+  background: var(--card-white);
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Input styles */
+.input {
+  border-radius: 6px;
+  border: 1px solid var(--border-gray);
+}
+
+.input:focus {
+  outline: none;
+  ring: 2px solid var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.btn-primary:hover {
+  background-color: var(--hover-green);
+}
+
+.btn-primary:focus {
+  ring: 2px solid var(--primary-green);
+  ring-offset: 2px;
+}
+
+/* Positive/negative value styling */
+.text-positive {
+  color: var(--positive-green);
+}
+
+.text-negative {
+  color: var(--negative-red);
+}
+
+/* Typography */
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Responsive design utilities */
+@media (max-width: 1024px) {
+  .grid-two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .single-column {
+    min-height: 50vh;
+  }
+}
