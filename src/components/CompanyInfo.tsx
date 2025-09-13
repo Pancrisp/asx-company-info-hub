@@ -1,6 +1,6 @@
 'use client';
 
-import { CompanyInfoProps } from '@/types';
+import { CompanyInfoProps } from '@/types/props';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function CompanyInfo({ companyData, loading }: CompanyInfoProps) {

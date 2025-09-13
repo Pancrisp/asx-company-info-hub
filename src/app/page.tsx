@@ -1,63 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import CompanySearch from '@/components/CompanySearch';
+import Search from '@/components/search';
 import KeyStatistics from '@/components/KeyStatistics';
 import CompanyInfo from '@/components/CompanyInfo';
-import { AppState } from '@/types';
-import { fetchCompanyData, ApiError } from '@/lib/api';
+import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
 
 export default function Home() {
-  const [state, setState] = useState<AppState>({
-    loading: false,
-    error: '',
-    companyData: null,
-    quoteData: null,
-    currentTicker: ''
-  });
+  const [currentTicker, setCurrentTicker] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (ticker: string) => {
-    setState(prevState => ({
-      ...prevState,
-      loading: true,
-      error: '',
-      currentTicker: ticker
-    }));
+  const {
+    data: companyInfo,
+    isLoading: companyLoading,
+    error: companyError
+  } = useCompanyInformation(currentTicker);
+  const {
+    data: quoteData,
+    isLoading: quoteLoading,
+    error: quoteError
+  } = useQuoteData(currentTicker);
 
-    try {
-      const { company, quote } = await fetchCompanyData(ticker);
+  const isLoading = companyLoading || quoteLoading;
+  const error = companyError || quoteError;
 
-      setState(prevState => ({
-        ...prevState,
-        loading: false,
-        companyData: company,
-        quoteData: quote,
-        error: ''
-      }));
-    } catch (error) {
-      console.error('Search error:', error);
+  const hasResults = hasSearched;
 
-      let errorMessage = 'Failed to fetch company information. Please try again later.';
-
-      if (error instanceof ApiError) {
-        errorMessage = error.message;
-      }
-
-      setState(prevState => ({
-        ...prevState,
-        loading: false,
-        companyData: null,
-        quoteData: null,
-        error: errorMessage
-      }));
-    }
+  const handleSearch = (ticker: string) => {
+    setCurrentTicker(ticker);
+    setHasSearched(true);
   };
-
-  const hasResults = state.companyData || state.quoteData;
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
       <header className='bg-white shadow-sm border-b border-gray-200'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
           <div className='text-center'>
@@ -68,35 +43,29 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {!hasResults ? (
-          // Initial centered search layout
           <div className='single-column max-w-2xl mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]'>
-            <CompanySearch
+            <Search
               onSearch={handleSearch}
-              currentTicker={state.currentTicker}
-              loading={state.loading}
-              error={state.error}
+              currentTicker={currentTicker}
+              loading={isLoading}
+              error={error?.message || ''}
             />
           </div>
         ) : (
-          // Two-column layout after search
           <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
-            {/* Left Column */}
             <div className='space-y-6'>
-              <CompanySearch
+              <Search
                 onSearch={handleSearch}
-                currentTicker={state.currentTicker}
-                loading={state.loading}
-                error={state.error}
+                currentTicker={currentTicker}
+                loading={isLoading}
+                error={error?.message || ''}
               />
-              <KeyStatistics quoteData={state.quoteData} loading={state.loading} />
+              <KeyStatistics quoteData={quoteData || null} loading={quoteLoading} />
             </div>
-
-            {/* Right Column */}
             <div>
-              <CompanyInfo companyData={state.companyData} loading={state.loading} />
+              <CompanyInfo companyData={companyInfo || null} loading={companyLoading} />
             </div>
           </div>
         )}
