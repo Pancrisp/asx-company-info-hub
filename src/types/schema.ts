@@ -22,5 +22,7 @@ export interface QuoteData {
     pctchng: number;
     yrhigh: number;
     yrlow: number;
+    peratio: number;
+    earnings: number;
   };
 }

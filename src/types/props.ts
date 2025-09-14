@@ -9,6 +9,7 @@ export interface SearchComponentProps {
 export interface KeyStatisticsProps {
   quoteData: QuoteData | null;
   loading: boolean;
+  companyName?: string;
 }
 
 export interface CompanyInfoProps {
