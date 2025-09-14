@@ -20,14 +20,12 @@
   --font-mono: ui-monospace, monospace;
 }
 
-/* Remove dark mode for this application */
 body {
   background: var(--background-gray);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* Custom styles for the ASX dashboard */
 .single-column {
   max-width: 800px;
   margin: 0 auto;
@@ -39,7 +37,6 @@ body {
   min-height: 60vh;
 }
 
-/* Card styles */
 .card {
   background: var(--card-white);
   border: 1px solid var(--border-gray);
@@ -47,19 +44,11 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Input styles */
 .input {
   border-radius: 6px;
   border: 1px solid var(--border-gray);
 }
 
-.input:focus {
-  /* outline: none; */
-  outline: 2px solid var(--primary-green);
-  border-color: var(--primary-green);
-}
-
-/* Button styles */
 .btn-primary {
   background-color: var(--primary-green);
   border-color: var(--primary-green);
@@ -74,7 +63,6 @@ body {
   ring-offset: 2px;
 }
 
-/* Positive/negative value styling */
 .text-positive {
   color: var(--positive-green);
 }
@@ -83,13 +71,11 @@ body {
   color: var(--negative-red);
 }
 
-/* Typography */
 .stat-value {
   font-size: 1rem;
   font-weight: 600;
 }
 
-/* Loading spinner animation */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -99,7 +85,6 @@ body {
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -117,7 +102,6 @@ body {
   background: var(--text-secondary);
 }
 
-/* Responsive design utilities */
 @media (max-width: 1024px) {
   .grid-two-column {
     grid-template-columns: 1fr;

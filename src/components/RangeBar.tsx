@@ -29,7 +29,7 @@ export default function RangeBar({
         <span>{title.toUpperCase()} RANGE</span>
         <span>{formatCurrency(highPrice)}</span>
       </div>
-      <div className='relative h-2 bg-gray-300 rounded-full'>
+      <div className='relative h-2 bg-gray-300 rounded-full overflow-hidden'>
         <div
           data-testid='range-progress'
           className='absolute top-0 h-2'

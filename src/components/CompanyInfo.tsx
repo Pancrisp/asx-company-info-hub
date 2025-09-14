@@ -32,18 +32,6 @@ export default function CompanyInfo({ companyData, loading }: CompanyInfoProps) 
           )}
         </div>
       </div>
-
-      {/* Ticker Display */}
-      {companyData.ticker && (
-        <div className='mt-4 pt-4 border-t border-gray-100'>
-          <div className='flex items-center'>
-            <span className='text-sm text-gray-500 mr-2'>Ticker:</span>
-            <span className='text-sm font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded'>
-              {companyData.ticker.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

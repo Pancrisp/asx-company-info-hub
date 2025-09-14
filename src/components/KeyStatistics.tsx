@@ -13,7 +13,7 @@ import LoadingSpinner from './LoadingSpinner';
 import RangeBar from './RangeBar';
 import TickerMetrics from './TickerMetrics';
 
-export default function KeyStatistics({ quoteData, loading, companyName }: KeyStatisticsProps) {
+export default function KeyStatistics({ quoteData, loading, companyData }: KeyStatisticsProps) {
   if (loading) {
     return (
       <div className='bg-white p-6'>
@@ -26,15 +26,15 @@ export default function KeyStatistics({ quoteData, loading, companyName }: KeySt
     return null;
   }
 
-  const { quote, symbol } = quoteData;
+  const { quote } = quoteData;
   const isPositive = quote.cf_netchng >= 0;
   const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
 
   return (
     <article className='bg-white p-6'>
       <header className='flex items-center gap-4 mb-6'>
-        <h1 className='text-md text-gray-900'>{symbol}</h1>
-        <span className='text-md text-gray-500'>{companyName || 'Company Name'}</span>
+        <h1 className='text-md text-gray-900'>{companyData?.ticker}</h1>
+        <span className='text-md text-gray-500'>{'Company Name'}</span>
       </header>
 
       <section className='mb-8'>
