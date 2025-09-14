@@ -126,3 +126,11 @@ export function formatPercentage(value: number): string {
   const formatted = value.toFixed(2);
   return `${value >= 0 ? '+' : ''}${formatted}%`;
 }
+
+export function formatRatio(value: number): string {
+  return value.toFixed(2);
+}
+
+export function formatPercentFromHigh(value: number): string {
+  return `${value.toFixed(2)}%`;
+}

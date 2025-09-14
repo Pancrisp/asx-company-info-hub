@@ -1,8 +1,17 @@
 'use client';
 
 import { KeyStatisticsProps } from '@/types/props';
-import { formatCurrency, formatNumber, formatMarketValue, formatPercentage } from '@/lib/api';
+import {
+  formatCurrency,
+  formatNumber,
+  formatMarketValue,
+  formatPercentage,
+  formatRatio,
+  formatPercentFromHigh
+} from '@/lib/api';
 import LoadingSpinner from './LoadingSpinner';
+import RangeBar from './RangeBar';
+import TickerMetrics from './TickerMetrics';
 
 export default function KeyStatistics({ quoteData, loading, companyName }: KeyStatisticsProps) {
   if (loading) {
@@ -19,120 +28,68 @@ export default function KeyStatistics({ quoteData, loading, companyName }: KeySt
 
   const { quote, symbol } = quoteData;
   const isPositive = quote.cf_netchng >= 0;
-
-  // Calculate % from 52WK High
   const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
 
   return (
-    <div className='bg-white p-6'>
-      {/* Header */}
-      <div className='mb-6'>
-        <div className='flex items-center gap-4 mb-2'>
-          <h1 className='text-2xl font-bold text-gray-900'>{symbol}</h1>
-          <span className='text-xl text-gray-500'>{companyName || 'Company Name'}</span>
-        </div>
-      </div>
+    <article className='bg-white p-6'>
+      <header className='flex items-center gap-4 mb-6'>
+        <h1 className='text-md text-gray-900'>{symbol}</h1>
+        <span className='text-md text-gray-500'>{companyName || 'Company Name'}</span>
+      </header>
 
-      {/* Price Section */}
-      <div className='mb-8'>
-        <div className='flex items-center gap-4 mb-4'>
-          <span className='text-5xl font-bold text-gray-900'>{formatCurrency(quote.cf_last)}</span>
+      <section className='mb-8'>
+        <div className='flex items-center gap-4'>
+          <data value={quote.cf_last} className='text-3xl font-bold text-gray-900'>
+            {formatCurrency(quote.cf_last)}
+          </data>
           <div
-            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-              isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            className={`px-3 py-1 rounded text-md font-semibold ${
+              isPositive ? 'bg-green-100' : 'bg-red-100'
             }`}
+            style={{
+              color: isPositive ? 'var(--positive-green)' : 'var(--negative-red)'
+            }}
           >
-            {isPositive ? '+' : ''}
-            {formatCurrency(quote.cf_netchng)} [{formatPercentage(quote.pctchng)}]
+            <data value={quote.cf_netchng}>{formatCurrency(quote.cf_netchng)}</data> [
+            <data value={quote.pctchng}>{formatPercentage(quote.pctchng)}</data>]
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Day Range */}
-      <div className='mb-6'>
-        <div className='flex justify-between text-sm text-gray-500 mb-2'>
-          <span>{formatCurrency(quote.cf_low)}</span>
-          <span className='font-medium'>DAY RANGE</span>
-          <span>{formatCurrency(quote.cf_high)}</span>
-        </div>
-        <div className='relative h-2 bg-gray-300 rounded-full'>
-          <div
-            className={`absolute top-0 h-2 ${
-              quote.cf_last >= quote.cf_open ? 'bg-green-500' : 'bg-red-500'
-            }`}
-            style={{
-              left: `${Math.min(
-                ((quote.cf_open - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100,
-                ((quote.cf_last - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100
-              )}%`,
-              width: `${Math.abs(
-                ((quote.cf_last - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100 -
-                  ((quote.cf_open - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100
-              )}%`
-            }}
-          />
-        </div>
-      </div>
+      <RangeBar
+        title='day'
+        openPrice={quote.cf_open}
+        lowPrice={quote.cf_low}
+        highPrice={quote.cf_high}
+        currentPrice={quote.cf_last}
+      />
+      <RangeBar
+        title='52wk'
+        openPrice={quote.cf_open}
+        lowPrice={quote.yrlow}
+        highPrice={quote.yrhigh}
+        currentPrice={quote.cf_last}
+      />
 
-      {/* Year Range */}
-      <div className='mb-8'>
-        <div className='flex justify-between text-sm text-gray-500 mb-2'>
-          <span>{formatCurrency(quote.yrlow)}</span>
-          <span className='font-medium'>52WK RANGE</span>
-          <span>{formatCurrency(quote.yrhigh)}</span>
-        </div>
-        <div className='relative h-2 bg-gray-300 rounded-full'>
-          <div
-            className={`absolute top-0 h-2 ${
-              quote.cf_last >= quote.cf_open ? 'bg-green-500' : 'bg-red-500'
-            }`}
-            style={{
-              left: `${Math.min(
-                ((quote.cf_open - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100,
-                ((quote.cf_last - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100
-              )}%`,
-              width: `${Math.abs(
-                ((quote.cf_last - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100 -
-                  ((quote.cf_open - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100
-              )}%`
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Statistics Grid */}
-      <div className='grid grid-cols-2 gap-x-8 gap-y-6'>
-        <div>
-          <div className='text-sm text-gray-500 mb-1'>Market Cap</div>
-          <div className='text-lg font-semibold text-gray-900'>
-            {formatMarketValue(quote.mkt_value)}
-          </div>
-        </div>
-
-        <div>
-          <div className='text-sm text-gray-500 mb-1'>Volume</div>
-          <div className='text-lg font-semibold text-gray-900'>{formatNumber(quote.cf_volume)}</div>
-        </div>
-
-        <div>
-          <div className='text-sm text-gray-500 mb-1'>P/E Ratio</div>
-          <div className='text-lg font-semibold text-gray-900'>{quote.peratio.toFixed(2)}</div>
-        </div>
-
-        <div>
-          <div className='text-sm text-gray-500 mb-1'>% from 52WK High</div>
-          <div className='text-lg font-semibold text-gray-900'>{percentFromHigh.toFixed(2)}%</div>
-        </div>
-
-        <div>
-          <div className='text-sm text-gray-500 mb-1'>EPS</div>
-          <div className='text-lg font-semibold text-gray-900'>
-            {formatCurrency(quote.earnings)}
-          </div>
-        </div>
-
-        <div>{/* Empty cell as shown in the image */}</div>
-      </div>
-    </div>
+      <section className='grid grid-cols-2 gap-x-8 gap-y-6 mt-8'>
+        <TickerMetrics
+          label='Market capitalisation'
+          value={quote.mkt_value}
+          formatter={formatMarketValue}
+        />
+        <TickerMetrics label='Volume' value={quote.cf_volume} formatter={formatNumber} />
+        <TickerMetrics label='P/E ratio' value={quote.peratio} formatter={formatRatio} />
+        <TickerMetrics
+          label='% from 52WK high'
+          value={percentFromHigh}
+          formatter={formatPercentFromHigh}
+        />
+        <TickerMetrics
+          label='Earnings per share'
+          value={quote.earnings}
+          formatter={formatCurrency}
+        />
+      </section>
+    </article>
   );
 }
