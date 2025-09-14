@@ -1,152 +1,145 @@
 'use client';
 
-import { useState, FormEvent, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption
+} from '@headlessui/react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 import { POPULAR_STOCKS } from '@/data/stocks';
 import { Stock } from '@/types/schema';
 import { SearchComponentProps } from '@/types/props';
 import { isValidTicker, formatTicker } from '@/lib/api';
-import useDebounce from '@/hooks/useDebounce';
 
-import SearchInput from './SearchInput';
-import SearchDropdown from './SearchDropdown';
-
-export default function Search({ onSearch, currentTicker, loading, error }: SearchComponentProps) {
-  const [validationError, setValidationError] = useState('');
-  const [inputValue, setInputValue] = useState(currentTicker);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [filterQuery, setFilterQuery] = useState('');
-
+export default function Search({ onSearch, loading, error }: SearchComponentProps) {
+  const [validationError, setValidationError] = useState<string>('');
+  const [inputValue, setInputValue] = useState<string>('');
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null!);
 
-  const debouncedFilterQuery = useDebounce(filterQuery, 500);
-  const filteredStocks = useMemo(() => {
-    if (!debouncedFilterQuery.trim()) {
-      return POPULAR_STOCKS;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && inputRef.current && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const filteredStocks =
+    inputValue === ''
+      ? POPULAR_STOCKS
+      : POPULAR_STOCKS.filter(
+          stock =>
+            stock.ticker.toLowerCase().includes(inputValue.toLowerCase()) ||
+            stock.name.toLowerCase().includes(inputValue.toLowerCase())
+        );
+
+  const handleSearch = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      inputRef.current?.blur();
+      return;
     }
 
-    const query = debouncedFilterQuery.toLowerCase();
-    return POPULAR_STOCKS.filter(
-      stock =>
-        stock.ticker.toLowerCase().includes(query) || stock.name.toLowerCase().includes(query)
-    );
-  }, [debouncedFilterQuery]);
+    if (e.key !== 'Enter') return;
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const ticker = formatTicker(inputValue);
+    const stock = formatTicker(inputValue);
 
-    if (!ticker) {
+    if (!stock) {
       setValidationError('Please enter a ticker symbol');
       return;
     }
 
-    if (!isValidTicker(ticker)) {
+    if (!isValidTicker(stock)) {
       setValidationError('Please enter a valid ticker (minimum 3 alphanumeric characters)');
       return;
     }
 
     setValidationError('');
-    setIsDropdownOpen(false);
-    onSearch(ticker);
+    onSearch(stock);
   };
 
   const handleInputChange = (value: string) => {
-    // Auto-convert to uppercase and filter only alphanumeric characters
     const formattedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    setInputValue(formattedValue);
-    setFilterQuery(formattedValue);
-    setHighlightedIndex(-1);
 
-    // Clear validation error when user starts typing
+    setInputValue(formattedValue);
+    setSelectedStock(null);
+
     if (validationError) {
       setValidationError('');
     }
   };
 
-  const handleInputFocus = () => {
-    setIsDropdownOpen(true);
-  };
+  const handleStockSelect = (stock: Stock | null) => {
+    if (!stock) return;
 
-  const handleStockSelect = useCallback(
-    (stock: Stock) => {
-      setInputValue(stock.ticker);
-      setValidationError('');
-      setIsDropdownOpen(false);
-      setHighlightedIndex(-1);
-      onSearch(stock.ticker);
-    },
-    [onSearch]
-  );
+    setSelectedStock(stock);
+    setInputValue(stock.ticker);
+    setValidationError('');
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isDropdownOpen) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightedIndex(prev => (prev < filteredStocks.length - 1 ? prev + 1 : prev));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < filteredStocks.length) {
-          handleStockSelect(filteredStocks[highlightedIndex]);
-        }
-        break;
-      case 'Escape':
-        setIsDropdownOpen(false);
-        setHighlightedIndex(-1);
-        break;
+    const ticker = formatTicker(stock.ticker);
+    if (ticker && isValidTicker(ticker)) {
+      onSearch(ticker);
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-        setHighlightedIndex(-1);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   return (
-    <div className='w-full max-w-md mx-auto relative'>
-      <SearchInput
-        inputValue={inputValue}
-        onInputChange={handleInputChange}
-        onSubmit={handleSubmit}
-        onFocus={handleInputFocus}
-        onKeyDown={handleKeyDown}
-        loading={loading}
-        isDropdownOpen={isDropdownOpen}
-        highlightedIndex={highlightedIndex}
-        validationError={validationError}
-        error={error}
-        inputRef={inputRef}
-      />
-      <SearchDropdown
-        isOpen={isDropdownOpen}
-        stocks={filteredStocks}
-        highlightedIndex={highlightedIndex}
-        onStockSelect={handleStockSelect}
-        onHighlightChange={setHighlightedIndex}
-        filterQuery={debouncedFilterQuery}
-        dropdownRef={dropdownRef}
-      />
+    <div className='w-full max-w-md mx-auto'>
+      <Combobox immediate value={selectedStock} onChange={handleStockSelect}>
+        <div className='relative'>
+          <ComboboxInput
+            ref={inputRef}
+            className='w-full px-3 py-3 rounded-lg text-gray-900 border placeholder-gray-500'
+            displayValue={(stock: Stock) => stock?.ticker || inputValue}
+            onChange={e => handleInputChange(e.target.value)}
+            onKeyDown={e => handleSearch(e)}
+            placeholder='Search for ticker'
+            disabled={loading}
+          />
+
+          <ComboboxButton className='group absolute inset-y-0 right-0 px-3 py-3 text-gray-500'>
+            <MagnifyingGlassIcon className='size-5' />
+          </ComboboxButton>
+
+          <ComboboxOptions className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 z-50 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+            {filteredStocks.length === 0 ? (
+              <p className='px-4 py-3 text-gray-900 m-0'>
+                Search for ticker <strong>{inputValue}</strong>
+              </p>
+            ) : (
+              filteredStocks.map(stock => (
+                <ComboboxOption
+                  key={stock.ticker}
+                  className='w-full text-left flex justify-between items-center px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 min-h-[44px] data-[focus]:bg-gray-50'
+                  value={stock}
+                >
+                  <strong className='text-gray-900'>{stock.ticker}</strong>
+                  <small className='text-gray-600'>{stock.name}</small>
+                </ComboboxOption>
+              ))
+            )}
+          </ComboboxOptions>
+        </div>
+      </Combobox>
+
+      {validationError && (
+        <p id='search-error' className='mt-2 text-sm text-red-600' role='alert'>
+          {validationError}
+        </p>
+      )}
+
+      {error && (
+        <p id='search-error' className='mt-2 text-sm text-red-600' role='alert'>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

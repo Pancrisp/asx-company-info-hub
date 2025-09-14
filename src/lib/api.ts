@@ -28,10 +28,7 @@ export async function fetchCompanyInformation(ticker: string): Promise<CompanyDa
       }
     }
 
-    const data = await response.json();
-    console.log(data);
-
-    return data;
+    return await response.json();
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -57,10 +54,7 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
       }
     }
 
-    const data = await response.json();
-    console.log(data);
-
-    return data;
+    return await response.json();
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

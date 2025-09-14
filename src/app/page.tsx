@@ -46,22 +46,12 @@ export default function Home() {
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {!hasResults ? (
           <div className='single-column max-w-2xl mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]'>
-            <Search
-              onSearch={handleSearch}
-              currentTicker={currentTicker}
-              loading={isLoading}
-              error={error?.message || ''}
-            />
+            <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
           </div>
         ) : (
           <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
             <div className='space-y-6'>
-              <Search
-                onSearch={handleSearch}
-                currentTicker={currentTicker}
-                loading={isLoading}
-                error={error?.message || ''}
-              />
+              <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
               <KeyStatistics quoteData={quoteData || null} loading={quoteLoading} />
             </div>
             <div>

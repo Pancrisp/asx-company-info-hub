@@ -54,8 +54,8 @@ body {
 }
 
 .input:focus {
-  outline: none;
-  ring: 2px solid var(--primary-green);
+  /* outline: none; */
+  outline: 2px solid var(--primary-green);
   border-color: var(--primary-green);
 }
 
