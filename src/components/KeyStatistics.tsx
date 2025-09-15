@@ -27,8 +27,17 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
   }
 
   const { quote } = quoteData;
-  const isPositive = quote.cf_netchng >= 0;
   const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
+  const isPositive = quote.cf_netchng > 0;
+  const isNegative = quote.cf_netchng < 0;
+
+  const priceChangeColourPicker = () => {
+    if (isPositive) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
+    if (isNegative) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
+    return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
+  };
+
+  const priceChange = priceChangeColourPicker();
 
   return (
     <article className='bg-white p-6'>
@@ -43,11 +52,9 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
             {formatCurrency(quote.cf_last)}
           </data>
           <div
-            className={`px-3 py-1 rounded text-md font-semibold ${
-              isPositive ? 'bg-green-100' : 'bg-red-100'
-            }`}
+            className={`px-3 py-1 rounded text-md font-semibold ${priceChange.bg}`}
             style={{
-              color: isPositive ? 'var(--positive-green)' : 'var(--negative-red)'
+              color: priceChange.color
             }}
           >
             <data value={quote.cf_netchng}>{formatCurrency(quote.cf_netchng)}</data> [
