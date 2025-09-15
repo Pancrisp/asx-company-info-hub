@@ -18,8 +18,8 @@ export default function TickerMetrics({
 
   return (
     <dl>
-      <dt className='text-sm text-gray-500'>{label}</dt>
-      <dd className='text-md font-semibold text-gray-900'>{displayValue}</dd>
+      <dt className='text-xs text-gray-500'>{label}</dt>
+      <dd className='text-sm font-semibold text-gray-900'>{displayValue}</dd>
     </dl>
   );
 }

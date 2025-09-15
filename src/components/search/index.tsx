@@ -91,7 +91,7 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
   };
 
   return (
-    <div className='w-full max-w-md mx-auto'>
+    <div className='w-full max-w-sm mx-auto'>
       <Combobox immediate value={selectedStock} onChange={handleStockSelect}>
         <div className='relative'>
           <ComboboxInput

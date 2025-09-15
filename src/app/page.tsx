@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Search from '@/components/search';
 import KeyStatistics from '@/components/KeyStatistics';
-import CompanyInfo from '@/components/CompanyInfo';
 import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
 
 export default function Home() {
@@ -11,7 +10,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
 
   const {
-    data: companyInfo,
+    data: companyData,
     isLoading: companyLoading,
     error: companyError
   } = useCompanyInformation(currentTicker);
@@ -53,11 +52,8 @@ export default function Home() {
               <KeyStatistics
                 quoteData={quoteData || null}
                 loading={quoteLoading}
-                companyData={companyInfo || null}
+                companyData={companyData || null}
               />
-            </div>
-            <div>
-              <CompanyInfo companyData={companyInfo || null} loading={companyLoading} />
             </div>
           </div>
         )}

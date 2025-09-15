@@ -1,6 +1,5 @@
 'use client';
 
-import { KeyStatisticsProps } from '@/types/props';
 import {
   formatCurrency,
   formatNumber,
@@ -9,9 +8,17 @@ import {
   formatRatio,
   formatPercentFromHigh
 } from '@/lib/api';
+import { QuoteData, CompanyData } from '@/types/schema';
 import LoadingSpinner from './LoadingSpinner';
 import RangeBar from './RangeBar';
 import TickerMetrics from './TickerMetrics';
+import CompanyInfo from './CompanyInfo';
+
+interface KeyStatisticsProps {
+  quoteData: QuoteData | null;
+  loading: boolean;
+  companyData: CompanyData | null;
+}
 
 export default function KeyStatistics({ quoteData, loading, companyData }: KeyStatisticsProps) {
   if (loading) {
@@ -40,13 +47,12 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
   const priceChange = priceChangeColourPicker();
 
   return (
-    <article className='bg-white p-6'>
+    <article aria-label='Card for ticker data' className='bg-white p-6'>
       <header className='flex items-center gap-4 mb-4'>
         <h1 className='text-md text-gray-900'>{companyData?.ticker}</h1>
         <span className='text-md text-gray-500'>{'Company Name'}</span>
       </header>
-
-      <section className='mb-6'>
+      <section aria-label='Current share price and net change amount' className='mb-6'>
         <div className='flex items-center gap-4'>
           <data value={quote.cf_last} className='text-3xl font-bold text-gray-900'>
             {formatCurrency(quote.cf_last)}
@@ -62,23 +68,23 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
           </div>
         </div>
       </section>
-
-      <RangeBar
-        title='day'
-        openPrice={quote.cf_open}
-        highPrice={quote.cf_high}
-        lowPrice={quote.cf_low}
-        currentPrice={quote.cf_last}
-      />
-      <RangeBar
-        title='52wk'
-        openPrice={quote.cf_open}
-        highPrice={quote.yrhigh}
-        lowPrice={quote.yrlow}
-        currentPrice={quote.cf_last}
-      />
-
-      <section className='grid grid-cols-2 gap-x-8 gap-y-4 mt-6'>
+      <section aria-label='Intraday price movement range indicators (day range and 52 week range)'>
+        <RangeBar
+          title='day'
+          openPrice={quote.cf_open}
+          highPrice={quote.cf_high}
+          lowPrice={quote.cf_low}
+          currentPrice={quote.cf_last}
+        />
+        <RangeBar
+          title='52wk'
+          openPrice={quote.cf_open}
+          highPrice={quote.yrhigh}
+          lowPrice={quote.yrlow}
+          currentPrice={quote.cf_last}
+        />
+      </section>
+      <section aria-label='Financial metrics' className='grid grid-cols-2 gap-x-8 gap-y-4 mt-6'>
         <TickerMetrics
           label='Market capitalisation'
           value={quote.mkt_value}
@@ -97,6 +103,7 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
           formatter={formatCurrency}
         />
       </section>
+      <CompanyInfo companyData={companyData} loading={loading} />
     </article>
   );
 }
