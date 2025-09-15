@@ -1,4 +1,4 @@
-import { CompanyData, QuoteData, ApiResponse } from '@/types';
+import { CompanyData, QuoteData } from '@/types/schema';
 
 const API_BASE_URL = '/api/proxy';
 
@@ -28,8 +28,7 @@ export async function fetchCompanyInformation(ticker: string): Promise<CompanyDa
       }
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -55,8 +54,7 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
       }
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -66,6 +64,8 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
   }
 }
 
+// Deprecated: Use individual fetch functions with separate caching strategies
+// Company info should be cached indefinitely, quote data should refresh frequently
 export async function fetchCompanyData(
   ticker: string
 ): Promise<{ company: CompanyData; quote: QuoteData }> {
