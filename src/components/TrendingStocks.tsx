@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
-import { useMultipleCompanyData } from '@/hooks/useTickerData';
+import { useMultipleQuoteData } from '@/hooks/useTickerData';
 import { POPULAR_STOCKS } from '@/data/stocks';
 import StockCard from './StockCard';
 
@@ -12,14 +12,14 @@ interface TrendingStocksProps {
 export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
 
-  const { data: stocksData, isLoading, error } = useMultipleCompanyData(trendingTickers);
+  const { data, isLoading, error } = useMultipleQuoteData(trendingTickers);
 
   const getStockByTicker = (ticker: string) => {
     return POPULAR_STOCKS.find(stock => stock.ticker === ticker);
   };
 
   const getStockData = (ticker: string) => {
-    return stocksData?.find(item => item.ticker === ticker);
+    return data?.find(stock => stock.ticker === ticker);
   };
 
   return (
@@ -34,7 +34,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
 
           const isItemLoading = isLoading || !stockData?.data;
 
-          const quote = stockData?.data?.quote?.quote;
+          const quote = stockData?.data?.quote;
           const price = quote?.cf_last;
           const change = quote?.cf_netchng;
           const percentage = quote?.pctchng;

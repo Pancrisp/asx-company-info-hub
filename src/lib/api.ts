@@ -64,30 +64,6 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
   }
 }
 
-// Deprecated: Use individual fetch functions with separate caching strategies
-// Company info should be cached indefinitely, quote data should refresh frequently
-export async function fetchCompanyData(
-  ticker: string
-): Promise<{ company: CompanyData; quote: QuoteData }> {
-  try {
-    const [companyData, quoteData] = await Promise.all([
-      fetchCompanyInformation(ticker),
-      fetchQuoteData(ticker)
-    ]);
-
-    return {
-      company: companyData,
-      quote: quoteData
-    };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    console.error('Error fetching company data:', error);
-    throw new ApiError('Failed to fetch company data. Please try again later');
-  }
-}
-
 export function isValidTicker(ticker: string): boolean {
   // Check if ticker is at least 3 characters and contains only alphanumeric characters
   const trimmedTicker = ticker.trim();

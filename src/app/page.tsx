@@ -5,27 +5,16 @@ import Search from '@/components/search';
 import KeyStatistics from '@/components/KeyStatistics';
 import TrendingStocks from '@/components/TrendingStocks';
 import EmptyState from '@/components/EmptyState';
-import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
+import { useCompanyData } from '@/hooks/useTickerData';
 
 export default function Home() {
   const [currentTicker, setCurrentTicker] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const {
-    data: companyData,
-    isLoading: companyLoading,
-    error: companyError
-  } = useCompanyInformation(currentTicker);
-  const {
-    data: quoteData,
-    isLoading: quoteLoading,
-    error: quoteError
-  } = useQuoteData(currentTicker);
+  const { data, isLoading, error } = useCompanyData(currentTicker);
 
-  const isLoading = companyLoading || quoteLoading;
-  const error = companyError || quoteError;
-
-  const hasResults = hasSearched;
+  const companyData = data?.company || null;
+  const quoteData = data?.quote || null;
 
   const handleSearch = (ticker: string) => {
     setCurrentTicker(ticker);
@@ -36,33 +25,27 @@ export default function Home() {
     <div className='min-h-screen bg-gray-50'>
       <header className='bg-white shadow-sm border-b border-gray-200'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <div className='flex items-center gap-4'>
+          <div className='flex items-center justify-between gap-4'>
             <h1 className='text-3xl font-bold text-gray-900'>ASX Company Information</h1>
+            <div className='max-w-sm w-full'>
+              <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
+            </div>
           </div>
         </div>
       </header>
 
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
-          {/* Left Column - Trending Stocks */}
-          <div>
+          <aside>
             <TrendingStocks onStockSelect={handleSearch} />
-          </div>
-
-          {/* Right Column - Search + Content */}
-          <div className='space-y-6'>
-            <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
-
-            {!hasResults ? (
+          </aside>
+          <section>
+            {!hasSearched ? (
               <EmptyState />
             ) : (
-              <KeyStatistics
-                quoteData={quoteData || null}
-                loading={quoteLoading}
-                companyData={companyData || null}
-              />
+              <KeyStatistics quoteData={quoteData} loading={isLoading} companyData={companyData} />
             )}
-          </div>
+          </section>
         </div>
       </main>
     </div>
