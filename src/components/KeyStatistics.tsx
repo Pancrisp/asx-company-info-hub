@@ -41,12 +41,12 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
 
   return (
     <article className='bg-white p-6'>
-      <header className='flex items-center gap-4 mb-6'>
+      <header className='flex items-center gap-4 mb-4'>
         <h1 className='text-md text-gray-900'>{companyData?.ticker}</h1>
         <span className='text-md text-gray-500'>{'Company Name'}</span>
       </header>
 
-      <section className='mb-8'>
+      <section className='mb-6'>
         <div className='flex items-center gap-4'>
           <data value={quote.cf_last} className='text-3xl font-bold text-gray-900'>
             {formatCurrency(quote.cf_last)}
@@ -66,19 +66,19 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
       <RangeBar
         title='day'
         openPrice={quote.cf_open}
-        lowPrice={quote.cf_low}
         highPrice={quote.cf_high}
+        lowPrice={quote.cf_low}
         currentPrice={quote.cf_last}
       />
       <RangeBar
         title='52wk'
         openPrice={quote.cf_open}
-        lowPrice={quote.yrlow}
         highPrice={quote.yrhigh}
+        lowPrice={quote.yrlow}
         currentPrice={quote.cf_last}
       />
 
-      <section className='grid grid-cols-2 gap-x-8 gap-y-6 mt-8'>
+      <section className='grid grid-cols-2 gap-x-8 gap-y-4 mt-6'>
         <TickerMetrics
           label='Market capitalisation'
           value={quote.mkt_value}

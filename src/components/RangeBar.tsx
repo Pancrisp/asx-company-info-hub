@@ -5,16 +5,16 @@ import { formatCurrency } from '@/lib/api';
 interface RangeBarProps {
   title: string;
   openPrice: number;
-  lowPrice: number;
   highPrice: number;
+  lowPrice: number;
   currentPrice: number;
 }
 
 export default function RangeBar({
   title,
   openPrice,
-  lowPrice,
   highPrice,
+  lowPrice,
   currentPrice
 }: RangeBarProps) {
   const isPositive = currentPrice >= openPrice;
