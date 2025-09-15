@@ -12,8 +12,13 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 import { POPULAR_STOCKS } from '@/data/stocks';
 import { Stock } from '@/types/schema';
-import { SearchComponentProps } from '@/types/props';
 import { isValidTicker, formatTicker } from '@/lib/api';
+
+interface SearchComponentProps {
+  onSearch: (ticker: string) => void;
+  loading: boolean;
+  error: string;
+}
 
 export default function Search({ onSearch, loading, error }: SearchComponentProps) {
   const [validationError, setValidationError] = useState<string>('');

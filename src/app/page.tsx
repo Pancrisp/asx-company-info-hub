@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Search from '@/components/search';
 import KeyStatistics from '@/components/KeyStatistics';
+import TrendingStocks from '@/components/TrendingStocks';
+import EmptyState from '@/components/EmptyState';
 import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
 
 export default function Home() {
@@ -41,22 +43,27 @@ export default function Home() {
       </header>
 
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        {!hasResults ? (
-          <div className='single-column max-w-2xl mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]'>
-            <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
+        <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
+          {/* Left Column - Trending Stocks */}
+          <div>
+            <TrendingStocks onStockSelect={handleSearch} />
           </div>
-        ) : (
-          <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
-            <div className='space-y-6'>
-              <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
+
+          {/* Right Column - Search + Content */}
+          <div className='space-y-6'>
+            <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
+
+            {!hasResults ? (
+              <EmptyState />
+            ) : (
               <KeyStatistics
                 quoteData={quoteData || null}
                 loading={quoteLoading}
                 companyData={companyData || null}
               />
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

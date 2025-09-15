@@ -1,6 +1,8 @@
 'use client';
 
-import { LoadingSpinnerProps } from '@/types/props';
+interface LoadingSpinnerProps {
+  text?: string;
+}
 
 export default function LoadingSpinner({ text = 'Loading...' }: LoadingSpinnerProps) {
   return (

@@ -52,8 +52,8 @@ export function useMultipleCompanyData(tickers: string[]) {
       }));
     },
     enabled: tickers.length > 0 && tickers.every(ticker => ticker.length >= 3),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000, // 2 minutes
+    gcTime: 20 * 60 * 1000, // 10 minutes
     retry: 1
   });
 }
