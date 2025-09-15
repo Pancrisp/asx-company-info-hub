@@ -84,19 +84,20 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
           currentPrice={quote.cf_last}
         />
       </section>
-      <section aria-label='Financial metrics' className='grid grid-cols-2 gap-x-8 gap-y-4 mt-6'>
+      <section aria-label='Financial metrics' className='grid grid-cols-3 gap-x-8 gap-y-4 mt-6'>
         <TickerMetrics
           label='Market capitalisation'
           value={quote.mkt_value}
           formatter={formatMarketValue}
         />
-        <TickerMetrics label='Volume' value={quote.cf_volume} formatter={formatNumber} />
         <TickerMetrics label='P/E ratio' value={quote.peratio} formatter={formatRatio} />
+
         <TickerMetrics
           label='% from 52WK high'
           value={percentFromHigh}
           formatter={formatPercentFromHigh}
         />
+        <TickerMetrics label='Volume' value={quote.cf_volume} formatter={formatNumber} />
         <TickerMetrics
           label='Earnings per share'
           value={quote.earnings}
