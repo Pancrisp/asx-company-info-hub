@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Search from '@/components/search';
 import KeyStatistics from '@/components/KeyStatistics';
-import CompanyInfo from '@/components/CompanyInfo';
 import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
 
 export default function Home() {
@@ -11,7 +10,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
 
   const {
-    data: companyInfo,
+    data: companyData,
     isLoading: companyLoading,
     error: companyError
   } = useCompanyInformation(currentTicker);
@@ -35,10 +34,8 @@ export default function Home() {
     <div className='min-h-screen bg-gray-50'>
       <header className='bg-white shadow-sm border-b border-gray-200'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <div className='text-center'>
+          <div className='flex items-center gap-4'>
             <h1 className='text-3xl font-bold text-gray-900'>ASX Company Information</h1>
-            <p className='mt-2 text-lg text-gray-600'>Search for Australian Stock Exchange</p>
-            <p className='text-lg text-gray-600'>listed companies</p>
           </div>
         </div>
       </header>
@@ -52,10 +49,11 @@ export default function Home() {
           <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
             <div className='space-y-6'>
               <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
-              <KeyStatistics quoteData={quoteData || null} loading={quoteLoading} />
-            </div>
-            <div>
-              <CompanyInfo companyData={companyInfo || null} loading={companyLoading} />
+              <KeyStatistics
+                quoteData={quoteData || null}
+                loading={quoteLoading}
+                companyData={companyData || null}
+              />
             </div>
           </div>
         )}

@@ -113,11 +113,11 @@ export function formatNumber(value: number): string {
 
 export function formatMarketValue(value: number): string {
   if (value >= 1_000_000_000) {
-    return `$${(value / 1_000_000_000).toFixed(1)}B`;
+    return `$${(value / 1_000_000_000).toFixed(2)}B`;
   } else if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(1)}M`;
+    return `$${(value / 1_000_000).toFixed(2)}M`;
   } else if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(1)}K`;
+    return `$${(value / 1_000).toFixed(2)}K`;
   }
   return formatCurrency(value);
 }
@@ -125,4 +125,12 @@ export function formatMarketValue(value: number): string {
 export function formatPercentage(value: number): string {
   const formatted = value.toFixed(2);
   return `${value >= 0 ? '+' : ''}${formatted}%`;
+}
+
+export function formatRatio(value: number): string {
+  return value.toFixed(2);
+}
+
+export function formatPercentFromHigh(value: number): string {
+  return `${value.toFixed(2)}%`;
 }

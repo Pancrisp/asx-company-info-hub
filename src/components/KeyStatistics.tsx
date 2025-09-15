@@ -1,14 +1,29 @@
 'use client';
 
-import { KeyStatisticsProps } from '@/types/props';
-import { formatCurrency, formatNumber, formatMarketValue, formatPercentage } from '@/lib/api';
+import {
+  formatCurrency,
+  formatNumber,
+  formatMarketValue,
+  formatPercentage,
+  formatRatio,
+  formatPercentFromHigh
+} from '@/lib/api';
+import { QuoteData, CompanyData } from '@/types/schema';
 import LoadingSpinner from './LoadingSpinner';
+import RangeBar from './RangeBar';
+import TickerMetrics from './TickerMetrics';
+import CompanyInfo from './CompanyInfo';
 
-export default function KeyStatistics({ quoteData, loading }: KeyStatisticsProps) {
+interface KeyStatisticsProps {
+  quoteData: QuoteData | null;
+  loading: boolean;
+  companyData: CompanyData | null;
+}
+
+export default function KeyStatistics({ quoteData, loading, companyData }: KeyStatisticsProps) {
   if (loading) {
     return (
-      <div className='bg-white rounded-lg border border-gray-200 shadow-sm p-6'>
-        <h2 className='text-lg font-semibold text-gray-900 mb-4'>Key Statistics</h2>
+      <div className='bg-white p-6'>
         <LoadingSpinner text='Loading statistics...' />
       </div>
     );
@@ -19,116 +34,76 @@ export default function KeyStatistics({ quoteData, loading }: KeyStatisticsProps
   }
 
   const { quote } = quoteData;
-  const isPositive = quote.cf_netchng >= 0;
+  const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
+  const isPositive = quote.cf_netchng > 0;
+  const isNegative = quote.cf_netchng < 0;
+
+  const priceChangeColourPicker = () => {
+    if (isPositive) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
+    if (isNegative) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
+    return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
+  };
+
+  const priceChange = priceChangeColourPicker();
 
   return (
-    <div className='bg-white rounded-lg border border-gray-200 shadow-sm p-6'>
-      <h2 className='text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2'>
-        Key Statistics
-      </h2>
-
-      <div className='space-y-3'>
-        {/* Current Price */}
-        <div className='flex justify-between items-center'>
-          <span className='text-gray-600 font-medium text-base'>Current Price</span>
-          <span className='text-gray-900 font-semibold text-base'>
+    <article aria-label='Card for ticker data' className='bg-white p-6'>
+      <header className='flex items-center gap-4 mb-4'>
+        <h1 className='text-md text-gray-900'>{companyData?.ticker}</h1>
+        <span className='text-md text-gray-500'>{'Company Name'}</span>
+      </header>
+      <section aria-label='Current share price and net change amount' className='mb-6'>
+        <div className='flex items-center gap-4'>
+          <data value={quote.cf_last} className='text-3xl font-bold text-gray-900'>
             {formatCurrency(quote.cf_last)}
-          </span>
-        </div>
-
-        {/* Change */}
-        <div className='flex justify-between items-center'>
-          <span className='text-gray-600 font-medium text-base'>Change</span>
+          </data>
           <div
-            className={`text-right font-semibold text-base ${
-              isPositive ? 'text-green-600' : 'text-red-600'
-            }`}
+            className={`px-3 py-1 rounded text-md font-semibold ${priceChange.bg}`}
+            style={{
+              color: priceChange.color
+            }}
           >
-            {isPositive ? '+' : ''}
-            {formatCurrency(quote.cf_netchng)} ({formatPercentage(quote.pctchng)})
+            <data value={quote.cf_netchng}>{formatCurrency(quote.cf_netchng)}</data> [
+            <data value={quote.pctchng}>{formatPercentage(quote.pctchng)}</data>]
           </div>
         </div>
-
-        <div id='volume' className='flex justify-between items-center'>
-          <span className='text-gray-600 font-medium text-base'>Volume</span>
-          <span className='text-gray-900 font-semibold text-base'>
-            {formatNumber(quote.cf_volume)}
-          </span>
-        </div>
-
-        <div id='market-value' className='flex justify-between items-center'>
-          <span className='text-gray-600 font-medium text-base'>Market Value</span>
-          <span className='text-gray-900 font-semibold text-base'>
-            {formatMarketValue(quote.mkt_value)}
-          </span>
-        </div>
-
-        <div id='day-range' className='space-y-2'>
-          <div className='relative'>
-            <div className='flex justify-between text-sm text-gray-500 mb-1'>
-              <span>{formatCurrency(quote.cf_low)}</span>
-              <span>Day Range</span>
-              <span>{formatCurrency(quote.cf_high)}</span>
-            </div>
-
-            <div className='relative h-2 bg-gray-300 rounded-full overflow-hidden'>
-              <div
-                className={`absolute top-0 h-2 ${
-                  quote.cf_last >= quote.cf_open ? 'bg-green-600' : 'bg-red-600'
-                }`}
-                style={{
-                  left: `${Math.min(
-                    Math.max(
-                      ((Math.min(quote.cf_open, quote.cf_last) - quote.cf_low) /
-                        (quote.cf_high - quote.cf_low)) *
-                        100,
-                      0
-                    ),
-                    100
-                  )}%`,
-                  width: `${Math.abs(
-                    ((quote.cf_last - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100 -
-                      ((quote.cf_open - quote.cf_low) / (quote.cf_high - quote.cf_low)) * 100
-                  )}%`
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div id='52wk-range' className='space-y-2'>
-          <div className='relative'>
-            <div className='flex justify-between text-sm text-gray-500 mb-1'>
-              <span>{formatCurrency(quote.yrlow)}</span>
-              <span>Year Range</span>
-              <span>{formatCurrency(quote.yrhigh)}</span>
-            </div>
-
-            <div className='relative h-2 bg-gray-300 rounded-full overflow-hidden'>
-              <div
-                className={`absolute top-0 h-2 ${
-                  quote.cf_last >= quote.cf_open ? 'bg-green-600' : 'bg-red-600'
-                }`}
-                style={{
-                  left: `${Math.min(
-                    Math.max(
-                      ((Math.min(quote.cf_open, quote.cf_last) - quote.yrlow) /
-                        (quote.yrhigh - quote.yrlow)) *
-                        100,
-                      0
-                    ),
-                    100
-                  )}%`,
-                  width: `${Math.abs(
-                    ((quote.cf_last - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100 -
-                      ((quote.cf_open - quote.yrlow) / (quote.yrhigh - quote.yrlow)) * 100
-                  )}%`
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </section>
+      <section aria-label='Intraday price movement range indicators (day range and 52 week range)'>
+        <RangeBar
+          title='day'
+          openPrice={quote.cf_open}
+          highPrice={quote.cf_high}
+          lowPrice={quote.cf_low}
+          currentPrice={quote.cf_last}
+        />
+        <RangeBar
+          title='52wk'
+          openPrice={quote.cf_open}
+          highPrice={quote.yrhigh}
+          lowPrice={quote.yrlow}
+          currentPrice={quote.cf_last}
+        />
+      </section>
+      <section aria-label='Financial metrics' className='grid grid-cols-2 gap-x-8 gap-y-4 mt-6'>
+        <TickerMetrics
+          label='Market capitalisation'
+          value={quote.mkt_value}
+          formatter={formatMarketValue}
+        />
+        <TickerMetrics label='Volume' value={quote.cf_volume} formatter={formatNumber} />
+        <TickerMetrics label='P/E ratio' value={quote.peratio} formatter={formatRatio} />
+        <TickerMetrics
+          label='% from 52WK high'
+          value={percentFromHigh}
+          formatter={formatPercentFromHigh}
+        />
+        <TickerMetrics
+          label='Earnings per share'
+          value={quote.earnings}
+          formatter={formatCurrency}
+        />
+      </section>
+      <CompanyInfo companyData={companyData} loading={loading} />
+    </article>
   );
 }
