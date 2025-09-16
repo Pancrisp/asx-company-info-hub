@@ -1,31 +1,35 @@
 'use client';
 
 import { Fragment } from 'react';
-import { useMultipleQuoteData } from '@/hooks/useTickerData';
 import { POPULAR_STOCKS } from '@/data/stocks';
-import StockCard from './StockCard';
+import StockItem from './StockItem';
 
 interface TrendingStocksProps {
   onStockSelect: (ticker: string) => void;
+  trendingData: Array<{
+    ticker: string;
+    data: any | null;
+    error: any;
+  }> | undefined;
+  isLoading: boolean;
+  error: Error | null;
 }
 
-export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
+export default function TrendingStocks({ onStockSelect, trendingData, isLoading, error }: TrendingStocksProps) {
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
-
-  const { data, isLoading, error } = useMultipleQuoteData(trendingTickers);
 
   const getStockByTicker = (ticker: string) => {
     return POPULAR_STOCKS.find(stock => stock.ticker === ticker);
   };
 
   const getStockData = (ticker: string) => {
-    return data?.find(stock => stock.ticker === ticker);
+    return trendingData?.find(stock => stock.ticker === ticker);
   };
 
   return (
     <Fragment>
-      <h2 className='text-lg font-semibold text-gray-900 mb-4'>Trending stocks</h2>
-      <div className='bg-white rounded-md border border-gray-300'>
+      <h2 className='mb-4 text-lg font-semibold text-gray-900'>Trending stocks</h2>
+      <div className='rounded-md border border-gray-300 bg-white'>
         {trendingTickers.map(ticker => {
           const stock = getStockByTicker(ticker);
           const stockData = getStockData(ticker);
@@ -40,7 +44,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
           const percentage = quote?.pctchng;
 
           return (
-            <StockCard
+            <StockItem
               key={ticker}
               ticker={ticker}
               name={stock.name}
@@ -55,7 +59,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
         })}
 
         {error && !isLoading && (
-          <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
+          <div className='mt-4 rounded-md border border-yellow-200 bg-yellow-50 p-3'>
             <p className='text-sm text-yellow-700'>
               Some trending stocks data may be unavailable. Please try refreshing the page.
             </p>

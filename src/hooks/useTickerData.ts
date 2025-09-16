@@ -3,7 +3,7 @@ import { fetchCompanyInformation, fetchQuoteData } from '@/lib/api';
 
 const isMarketHours = () => {
   const now = new Date();
-  const sydneyTime = new Date(now.toLocaleString('en-AU', { timeZone: 'Australia/Sydney' }));
+  const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
   const hours = sydneyTime.getHours();
   const dayOfWeek = sydneyTime.getDay();
   const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;

@@ -96,12 +96,12 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
   };
 
   return (
-    <div className='w-full max-w-sm mx-auto'>
+    <div className='mx-auto w-full max-w-sm'>
       <Combobox immediate value={selectedStock} onChange={handleStockSelect}>
         <div className='relative'>
           <ComboboxInput
             ref={inputRef}
-            className='w-full px-3 py-3 rounded-lg text-gray-900 border placeholder-gray-500'
+            className='w-full rounded-lg border px-3 py-3 text-gray-900 placeholder-gray-500'
             displayValue={(stock: Stock) => stock?.ticker || inputValue}
             onChange={e => handleInputChange(e.target.value)}
             onKeyDown={e => handleSearch(e)}
@@ -113,16 +113,16 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
             <MagnifyingGlassIcon className='size-5' />
           </ComboboxButton>
 
-          <ComboboxOptions className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 z-50 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+          <ComboboxOptions className='absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
             {filteredStocks.length === 0 ? (
-              <p className='px-4 py-3 text-gray-900 m-0'>
+              <p className='m-0 px-4 py-3 text-gray-900'>
                 Search for ticker <strong>{inputValue}</strong>
               </p>
             ) : (
               filteredStocks.map(stock => (
                 <ComboboxOption
                   key={stock.ticker}
-                  className='w-full text-left flex justify-between items-center px-4 py-3 cursor-pointer border-b border-gray-100 last:border-b-0 min-h-[44px] data-[focus]:bg-gray-50'
+                  className='flex min-h-[44px] w-full cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-3 text-left last:border-b-0 data-[focus]:bg-gray-50'
                   value={stock}
                 >
                   <strong className='text-gray-900'>{stock.ticker}</strong>
