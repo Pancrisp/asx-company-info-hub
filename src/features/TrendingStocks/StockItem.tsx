@@ -1,28 +1,23 @@
 'use client';
 
 import { formatCurrency, formatPercentage } from '@/lib/api';
+import { useTickerPrice } from '@/contexts/TickerDataContext';
 
 interface StockItemProps {
   ticker: string;
   name: string;
-  price?: number;
-  change?: number;
-  percentage?: number;
   onClick: () => void;
-  isLoading?: boolean;
-  error?: string;
 }
 
-export default function StockItem({
-  ticker,
-  name,
-  price,
-  change,
-  percentage,
-  onClick,
-  isLoading = false,
-  error
-}: StockItemProps) {
+export default function StockItem({ ticker, name, onClick }: StockItemProps) {
+  const { getQuoteData, isLoading, error } = useTickerPrice();
+  const quoteData = getQuoteData(ticker);
+  const tickerError = error(ticker);
+  const tickerLoading = isLoading(ticker);
+
+  const price = quoteData?.cf_last;
+  const change = quoteData?.cf_netchng;
+  const percentage = quoteData?.pctchng;
   const priceChangeColourPicker = () => {
     if (!change || !percentage) return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
     if (percentage > 0) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
@@ -32,7 +27,7 @@ export default function StockItem({
 
   const priceChangeStyle = priceChangeColourPicker();
 
-  if (isLoading) {
+  if (tickerLoading) {
     return (
       <div className='w-full border-b border-gray-300 bg-white px-4 py-3 first:rounded-t-md last:rounded-b-md last:border-b-0'>
         <div className='flex items-center justify-between'>
@@ -49,7 +44,7 @@ export default function StockItem({
     );
   }
 
-  if (error) {
+  if (tickerError) {
     return (
       <div className='w-full border-b border-gray-300 bg-white px-4 py-3 opacity-50 first:rounded-t-md last:rounded-b-md last:border-b-0'>
         <div className='flex items-center justify-between'>

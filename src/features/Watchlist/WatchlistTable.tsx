@@ -1,7 +1,7 @@
 'use client';
 
 import { useWatchlist } from '@/hooks/useWatchlist';
-import { useMultipleQuoteData } from '@/hooks/useTickerData';
+import { useTickerPrice } from '@/contexts/TickerDataContext';
 import {
   formatCurrency,
   formatMarketValue,
@@ -11,11 +11,11 @@ import {
 } from '@/lib/api';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import React from 'react';
 
 export default function WatchlistTable() {
-  const { watchlist, watchlistQuoteData, removeFromWatchlist } = useWatchlist();
-  const tickersNeedingFetch = watchlist.filter(ticker => !watchlistQuoteData.has(ticker));
-  const { data: fetchedData, isLoading } = useMultipleQuoteData(tickersNeedingFetch);
+  const { watchlist, removeFromWatchlist } = useWatchlist();
+  const { getQuoteData, isLoading } = useTickerPrice();
 
   if (watchlist.length === 0) {
     return (
@@ -29,7 +29,9 @@ export default function WatchlistTable() {
     );
   }
 
-  if (isLoading) {
+  const hasAnyLoading = watchlist.some(ticker => isLoading(ticker));
+
+  if (hasAnyLoading) {
     return (
       <div className='rounded-lg bg-white p-6'>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>Watchlist</h2>
@@ -38,21 +40,16 @@ export default function WatchlistTable() {
     );
   }
 
-  const combinedData = watchlist.map(ticker => {
-    const cachedData = watchlistQuoteData.get(ticker);
-    if (cachedData) {
-      return {
-        ticker,
-        data: cachedData,
-        error: null
-      };
-    }
-
-    const fetchedItem = fetchedData?.find(item => item.ticker === ticker);
-    return fetchedItem || { ticker, data: null, error: new Error('No data available') };
+  const watchlistData = watchlist.map(ticker => {
+    const quoteData = getQuoteData(ticker);
+    return {
+      ticker,
+      quoteData,
+      hasData: !!quoteData
+    };
   });
 
-  const validData = combinedData.filter(item => item.data && !item.error);
+  const validData = watchlistData.filter(item => item.hasData);
 
   return (
     <div className='overflow-hidden rounded-lg bg-white'>
@@ -92,12 +89,12 @@ export default function WatchlistTable() {
           </thead>
           <tbody className='divide-y divide-gray-200 bg-white'>
             {validData.map(item => {
-              if (!item.data) return null;
+              if (!item.quoteData) return null;
 
-              const { quote } = item.data;
-              const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
-              const isPositive = quote.cf_netchng > 0;
-              const isNegative = quote.cf_netchng < 0;
+              const { quoteData } = item;
+              const percentFromHigh = ((quoteData.yrhigh - quoteData.cf_last) / quoteData.yrhigh) * 100;
+              const isPositive = quoteData.cf_netchng > 0;
+              const isNegative = quoteData.cf_netchng < 0;
 
               const priceChangeColor = isPositive
                 ? 'text-green-600'
@@ -111,21 +108,21 @@ export default function WatchlistTable() {
                     {item.ticker}
                   </td>
                   <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
-                    {formatCurrency(quote.cf_last)}
+                    {formatCurrency(quoteData.cf_last)}
                   </td>
                   <td
                     className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${priceChangeColor}`}
                   >
-                    {formatPercentage(quote.pctchng)}
+                    {formatPercentage(quoteData.pctchng)}
                   </td>
                   <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
-                    {formatMarketValue(quote.mkt_value)}
+                    {formatMarketValue(quoteData.mkt_value)}
                   </td>
                   <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
-                    {formatRatio(quote.peratio)}
+                    {formatRatio(quoteData.peratio)}
                   </td>
                   <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
-                    {formatCurrency(quote.earnings)}
+                    {formatCurrency(quoteData.earnings)}
                   </td>
                   <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
                     {formatPercentFromHigh(percentFromHigh)}
@@ -146,7 +143,7 @@ export default function WatchlistTable() {
         </table>
       </div>
 
-      {combinedData.some(item => item.error) && (
+      {watchlistData.some(item => !item.hasData) && (
         <div className='border-t border-yellow-200 bg-yellow-50 px-6 py-3'>
           <p className='text-sm text-yellow-700'>
             Some watchlist items failed to load. They may have been delisted or have invalid

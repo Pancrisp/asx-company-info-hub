@@ -1,33 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import SearchBar from '@/components/SearchBar';
+
 import KeyStatistics from '@/features/KeyStatistics/KeyStatistics';
 import TrendingStocks from '@/features/TrendingStocks/TrendingStocks';
-import EmptyState from '@/components/EmptyState';
 import WatchlistTable from '@/features/Watchlist/WatchlistTable';
-import { useCompanyData, useMultipleQuoteData } from '@/hooks/useTickerData';
+import SearchBar from '@/components/SearchBar';
+import EmptyState from '@/components/EmptyState';
+
+import { useTickerData } from '@/contexts/TickerDataContext';
 import { WatchlistProvider } from '@/hooks/useWatchlist';
-import { POPULAR_STOCKS } from '@/data/stocks';
 
 export default function Home() {
   const [currentTicker, setCurrentTicker] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
-  const {
-    data: trendingData,
-    isLoading: trendingLoading,
-    error: trendingError
-  } = useMultipleQuoteData(trendingTickers);
-  const { data, isLoading, error } = useCompanyData(currentTicker);
-
-  const companyData = data?.company || null;
-  const quoteData = data?.quote || null;
-  // Get trending quote data for the current ticker if it exists
-  const trendingQuoteData = currentTicker
-    ? trendingData?.find(item => item.ticker === currentTicker.toUpperCase())?.data
-    : null;
+  const { companyData, quoteData, isLoading, error } = useTickerData(currentTicker);
 
   const handleSearch = (ticker: string) => {
     setCurrentTicker(ticker);
@@ -50,12 +38,7 @@ export default function Home() {
       <main className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
         <div className='grid grid-cols-1 gap-8 lg:grid-cols-[minmax(350px,450px)_1fr]'>
           <aside>
-            <TrendingStocks
-              onStockSelect={handleSearch}
-              trendingData={trendingData}
-              isLoading={trendingLoading}
-              error={trendingError}
-            />
+            <TrendingStocks onStockSelect={handleSearch} />
           </aside>
           <section className='space-y-8'>
             <WatchlistProvider>
@@ -63,7 +46,7 @@ export default function Home() {
                 <EmptyState />
               ) : (
                 <KeyStatistics
-                  quoteData={trendingQuoteData || quoteData}
+                  quoteData={quoteData}
                   loading={isLoading}
                   companyData={companyData}
                 />

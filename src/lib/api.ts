@@ -3,7 +3,10 @@ import { CompanyData, QuoteData } from '@/types/schema';
 const API_BASE_URL = '/api/proxy';
 
 export class ApiError extends Error {
-  constructor(message: string, public status?: number) {
+  constructor(
+    message: string,
+    public status?: number
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -54,7 +57,14 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
       }
     }
 
-    return await response.json();
+    const data = await response.json();
+    // data = {
+    //   "symbol": 'CBA',
+    //   "quote": {
+    //   }
+    // }
+    // Needed for flattened QuoteData interface
+    return data.quote ? data.quote : data;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

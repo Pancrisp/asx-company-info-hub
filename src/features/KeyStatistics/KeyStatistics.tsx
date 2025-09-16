@@ -75,12 +75,11 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
     return null;
   }
 
-  const { quote } = quoteData;
   const ticker = companyData?.ticker || '';
   const inWatchlist = isInWatchlist(ticker);
-  const percentFromHigh = ((quote.yrhigh - quote.cf_last) / quote.yrhigh) * 100;
-  const isPositive = quote.cf_netchng > 0;
-  const isNegative = quote.cf_netchng < 0;
+  const percentFromHigh = ((quoteData.yrhigh - quoteData.cf_last) / quoteData.yrhigh) * 100;
+  const isPositive = quoteData.cf_netchng > 0;
+  const isNegative = quoteData.cf_netchng < 0;
 
   const priceChangeColourPicker = () => {
     if (isPositive) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
@@ -98,7 +97,7 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
           <span className='text-md text-gray-500'>{'Company Name'}</span>
         </div>
         <button
-          onClick={() => toggleWatchlist(ticker, quoteData)}
+          onClick={() => toggleWatchlist(ticker)}
           className='cursor-pointer rounded-full border-2 border-gray-300 bg-gray-100 p-2 transition-colors hover:bg-gray-200'
           aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
         >
@@ -111,8 +110,8 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
       </header>
       <section aria-label='Current share price and net change amount' className='mb-6'>
         <div className='flex items-center gap-4'>
-          <data value={quote.cf_last} className='text-3xl font-bold text-gray-900'>
-            {formatCurrency(quote.cf_last)}
+          <data value={quoteData.cf_last} className='text-3xl font-bold text-gray-900'>
+            {formatCurrency(quoteData.cf_last)}
           </data>
           <div
             className={`text-md rounded px-3 py-1 font-semibold ${priceChange.bg}`}
@@ -120,44 +119,44 @@ export default function KeyStatistics({ quoteData, loading, companyData }: KeySt
               color: priceChange.color
             }}
           >
-            <data value={quote.cf_netchng}>{formatCurrency(quote.cf_netchng)}</data> [
-            <data value={quote.pctchng}>{formatPercentage(quote.pctchng)}</data>]
+            <data value={quoteData.cf_netchng}>{formatCurrency(quoteData.cf_netchng)}</data> [
+            <data value={quoteData.pctchng}>{formatPercentage(quoteData.pctchng)}</data>]
           </div>
         </div>
       </section>
       <section aria-label='Intraday price movement range indicators (day range and 52 week range)'>
         <RangeBar
           title='day'
-          openPrice={quote.cf_open}
-          highPrice={quote.cf_high}
-          lowPrice={quote.cf_low}
-          currentPrice={quote.cf_last}
+          openPrice={quoteData.cf_open}
+          highPrice={quoteData.cf_high}
+          lowPrice={quoteData.cf_low}
+          currentPrice={quoteData.cf_last}
         />
         <RangeBar
           title='52wk'
-          openPrice={quote.cf_open}
-          highPrice={quote.yrhigh}
-          lowPrice={quote.yrlow}
-          currentPrice={quote.cf_last}
+          openPrice={quoteData.cf_open}
+          highPrice={quoteData.yrhigh}
+          lowPrice={quoteData.yrlow}
+          currentPrice={quoteData.cf_last}
         />
       </section>
       <section aria-label='Financial metrics' className='mt-6 grid grid-cols-3 gap-x-8 gap-y-4'>
         <TickerMetrics
           label='Market capitalisation'
-          value={quote.mkt_value}
+          value={quoteData.mkt_value}
           formatter={formatMarketValue}
         />
-        <TickerMetrics label='P/E ratio' value={quote.peratio} formatter={formatRatio} />
+        <TickerMetrics label='P/E ratio' value={quoteData.peratio} formatter={formatRatio} />
 
         <TickerMetrics
           label='% from 52WK high'
           value={percentFromHigh}
           formatter={formatPercentFromHigh}
         />
-        <TickerMetrics label='Volume' value={quote.cf_volume} formatter={formatNumber} />
+        <TickerMetrics label='Volume' value={quoteData.cf_volume} formatter={formatNumber} />
         <TickerMetrics
           label='Earnings per share'
-          value={quote.earnings}
+          value={quoteData.earnings}
           formatter={formatCurrency}
         />
       </section>

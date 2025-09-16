@@ -1,17 +1,15 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { QuoteData } from '@/types/schema';
 
 const WATCHLIST_STORAGE_KEY = 'asx-watchlist';
 
 interface WatchlistContextType {
   watchlist: string[];
-  watchlistQuoteData: Map<string, QuoteData>;
-  addToWatchlist: (ticker: string, quoteData?: QuoteData | null) => void;
+  addToWatchlist: (ticker: string) => void;
   removeFromWatchlist: (ticker: string) => void;
   isInWatchlist: (ticker: string) => boolean;
-  toggleWatchlist: (ticker: string, quoteData?: QuoteData | null) => void;
+  toggleWatchlist: (ticker: string) => void;
 }
 
 const WatchlistContext = createContext<WatchlistContextType | undefined>(undefined);
@@ -22,7 +20,6 @@ interface WatchlistProviderProps {
 
 export function WatchlistProvider({ children }: WatchlistProviderProps) {
   const [watchlist, setWatchlist] = useState<string[]>([]);
-  const [watchlistQuoteData, setWatchlistQuoteData] = useState<Map<string, QuoteData>>(new Map());
 
   useEffect(() => {
     try {
@@ -47,7 +44,7 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
   }, []);
 
   const addToWatchlist = useCallback(
-    (ticker: string, quoteData?: QuoteData | null) => {
+    (ticker: string) => {
       const newTicker = ticker.toUpperCase();
       setWatchlist(prev => {
         if (prev.includes(newTicker)) {
@@ -57,14 +54,6 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
         saveToStorage(newWatchlist);
         return newWatchlist;
       });
-
-      if (quoteData) {
-        setWatchlistQuoteData(prev => {
-          const newData = new Map(prev);
-          newData.set(newTicker, quoteData);
-          return newData;
-        });
-      }
     },
     [saveToStorage]
   );
@@ -76,12 +65,6 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
         const newWatchlist = prev.filter(t => t !== newTicker);
         saveToStorage(newWatchlist);
         return newWatchlist;
-      });
-
-      setWatchlistQuoteData(prev => {
-        const newData = new Map(prev);
-        newData.delete(newTicker);
-        return newData;
       });
     },
     [saveToStorage]
@@ -95,11 +78,11 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
   );
 
   const toggleWatchlist = useCallback(
-    (ticker: string, quoteData?: QuoteData | null) => {
+    (ticker: string) => {
       if (isInWatchlist(ticker)) {
         removeFromWatchlist(ticker);
       } else {
-        addToWatchlist(ticker, quoteData);
+        addToWatchlist(ticker);
       }
     },
     [isInWatchlist, addToWatchlist, removeFromWatchlist]
@@ -107,7 +90,6 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
 
   const value = {
     watchlist,
-    watchlistQuoteData,
     addToWatchlist,
     removeFromWatchlist,
     isInWatchlist,
