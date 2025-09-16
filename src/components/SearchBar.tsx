@@ -21,9 +21,10 @@ interface SearchComponentProps {
 }
 
 export default function Search({ onSearch, loading, error }: SearchComponentProps) {
-  const [validationError, setValidationError] = useState<string>('');
-  const [inputValue, setInputValue] = useState<string>('');
+  const [validationError, setValidationError] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [pendingClear, setPendingClear] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -69,6 +70,8 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
 
     setValidationError('');
     onSearch(stock);
+    // Defer clearing the input until the search completes
+    setPendingClear(true);
   };
 
   const handleInputChange = (value: string) => {
@@ -92,8 +95,19 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     const ticker = formatTicker(stock.ticker);
     if (ticker && isValidTicker(ticker)) {
       onSearch(ticker);
+      // Mark to clear once loading finishes
+      setPendingClear(true);
     }
   };
+
+  // Clear the input and selection once a search completes successfully
+  useEffect(() => {
+    if (!loading && pendingClear && !error) {
+      setInputValue('');
+      setSelectedStock(null);
+      setPendingClear(false);
+    }
+  }, [loading, pendingClear, error]);
 
   return (
     <div className='mx-auto w-full max-w-sm'>
@@ -101,7 +115,7 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
         <div className='relative'>
           <ComboboxInput
             ref={inputRef}
-            className='w-full rounded-lg border px-3 py-3 text-gray-900 placeholder-gray-500'
+            className='w-full rounded-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500'
             displayValue={(stock: Stock) => stock?.ticker || inputValue}
             onChange={e => handleInputChange(e.target.value)}
             onKeyDown={e => handleSearch(e)}
@@ -115,9 +129,15 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
 
           <ComboboxOptions className='absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
             {filteredStocks.length === 0 ? (
-              <p className='m-0 px-4 py-3 text-gray-900'>
-                Search for ticker <strong>{inputValue}</strong>
-              </p>
+              <ComboboxOption
+                key={inputValue}
+                className='flex min-h-[44px] w-full cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-3 text-left last:border-b-0 data-[focus]:bg-gray-50'
+                value={inputValue}
+              >
+                <p className='text-gray-900'>
+                  Search for ticker <strong>{inputValue}</strong>
+                </p>
+              </ComboboxOption>
             ) : (
               filteredStocks.map(stock => (
                 <ComboboxOption

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchCompanyInformation, fetchQuoteData } from '@/lib/api';
 
 const isMarketHours = () => {
@@ -75,26 +75,44 @@ export function useCompanyData(ticker: string) {
 }
 
 export function useMultipleQuoteData(tickers: string[]) {
-  return useQuery({
-    queryKey: ['multipleCompanyData', ...tickers.map(t => t.toUpperCase()).sort()],
-    queryFn: async () => {
-      const results = await Promise.allSettled(tickers.map(ticker => fetchQuoteData(ticker)));
-
-      return results.map((result, index) => ({
-        ticker: tickers[index].toUpperCase(),
-        data: result.status === 'fulfilled' ? result.value : null,
-        error: result.status === 'rejected' ? result.reason : null
-      }));
-    },
-    enabled: tickers.length > 0 && tickers.every(ticker => ticker.length >= 3),
-    staleTime: () => {
-      return isMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
-    },
-    gcTime: 2 * 60 * 60 * 1000,
-    retry: 1,
-    refetchInterval: () => {
-      return isMarketHours() ? 1 * 60 * 1000 : 60 * 60 * 1000;
-    },
-    refetchIntervalInBackground: false
+  const queries = useQueries({
+    queries: tickers.map(ticker => ({
+      queryKey: ['quoteData', ticker.toUpperCase()],
+      queryFn: () => fetchQuoteData(ticker),
+      enabled: !!ticker && ticker.length >= 3,
+      staleTime: () => {
+        return isMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
+      },
+      gcTime: 2 * 60 * 60 * 1000,
+      retry: 1,
+      refetchInterval: () => {
+        return isMarketHours() ? 1 * 60 * 1000 : 60 * 60 * 1000;
+      },
+      refetchIntervalInBackground: false
+    }))
   });
+
+  // Create O(1) lookup map for ticker indices
+  const tickerIndexMap = new Map<string, number>();
+  tickers.forEach((ticker, index) => {
+    tickerIndexMap.set(ticker.toUpperCase(), index);
+  });
+
+  // Transform results to match the existing interface
+  const data = queries.map((query, index) => ({
+    ticker: tickers[index].toUpperCase(),
+    data: query.data || null,
+    error: query.error || null
+  }));
+
+  const isLoading = queries.some(query => query.isLoading);
+  const error = queries.find(query => query.error)?.error || null;
+
+  const getIsLoading = (ticker: string): boolean => {
+    const index = tickerIndexMap.get(ticker.toUpperCase());
+    if (index === undefined) return false;
+    return queries[index]?.isLoading || false;
+  };
+
+  return { data, isLoading, error, getIsLoading };
 }

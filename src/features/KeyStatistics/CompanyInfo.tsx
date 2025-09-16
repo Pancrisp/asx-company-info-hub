@@ -2,24 +2,13 @@
 
 import { useState } from 'react';
 import { CompanyData } from '@/types/schema';
-import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface CompanyInfoProps {
   companyData: CompanyData | null;
-  loading: boolean;
 }
 
-export default function CompanyInfo({ companyData, loading }: CompanyInfoProps) {
+export default function CompanyInfo({ companyData }: CompanyInfoProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  if (loading) {
-    return (
-      <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-        <h2 className='mb-4 text-lg font-semibold text-gray-900'>Company Information</h2>
-        <LoadingSpinner text='Loading company information...' />
-      </div>
-    );
-  }
 
   if (!companyData || !companyData.company_info) {
     return null;

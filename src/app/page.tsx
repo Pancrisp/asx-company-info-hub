@@ -6,7 +6,6 @@ import KeyStatistics from '@/features/KeyStatistics/KeyStatistics';
 import TrendingStocks from '@/features/TrendingStocks/TrendingStocks';
 import WatchlistTable from '@/features/Watchlist/WatchlistTable';
 import SearchBar from '@/components/SearchBar';
-import EmptyState from '@/components/EmptyState';
 
 import { useTickerData } from '@/contexts/TickerDataContext';
 import { WatchlistProvider } from '@/hooks/useWatchlist';
@@ -42,15 +41,12 @@ export default function Home() {
           </aside>
           <section className='space-y-8'>
             <WatchlistProvider>
-              {!hasSearched ? (
-                <EmptyState />
-              ) : (
-                <KeyStatistics
-                  quoteData={quoteData}
-                  loading={isLoading}
-                  companyData={companyData}
-                />
-              )}
+              <KeyStatistics
+                quoteData={quoteData}
+                loading={isLoading}
+                companyData={companyData}
+                showEmptyState={!hasSearched}
+              />
               <WatchlistTable />
             </WatchlistProvider>
           </section>

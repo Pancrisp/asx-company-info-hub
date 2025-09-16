@@ -59,7 +59,8 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
 
   const isLoading = (ticker: string): boolean => {
     const upperTicker = ticker.toUpperCase();
-    return watchedTickers.includes(upperTicker) && multipleQuoteQuery.isLoading;
+    if (!watchedTickers.includes(upperTicker)) return false;
+    return multipleQuoteQuery.getIsLoading ? multipleQuoteQuery.getIsLoading(ticker) : false;
   };
 
   const error = (ticker: string): Error | null => {
