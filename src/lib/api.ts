@@ -3,7 +3,10 @@ import { CompanyData, QuoteData } from '@/types/schema';
 const API_BASE_URL = '/api/proxy';
 
 export class ApiError extends Error {
-  constructor(message: string, public status?: number) {
+  constructor(
+    message: string,
+    public status?: number
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -54,37 +57,20 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
       }
     }
 
-    return await response.json();
+    const data = await response.json();
+    // data = {
+    //   "symbol": 'CBA',
+    //   "quote": {
+    //   }
+    // }
+    // Needed for flattened QuoteData interface
+    return data.quote ? data.quote : data;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
     console.error('Error fetching quote data:', error);
     throw new ApiError('Failed to fetch quote data. Please try again later');
-  }
-}
-
-// Deprecated: Use individual fetch functions with separate caching strategies
-// Company info should be cached indefinitely, quote data should refresh frequently
-export async function fetchCompanyData(
-  ticker: string
-): Promise<{ company: CompanyData; quote: QuoteData }> {
-  try {
-    const [companyData, quoteData] = await Promise.all([
-      fetchCompanyInformation(ticker),
-      fetchQuoteData(ticker)
-    ]);
-
-    return {
-      company: companyData,
-      quote: quoteData
-    };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    console.error('Error fetching company data:', error);
-    throw new ApiError('Failed to fetch company data. Please try again later');
   }
 }
 

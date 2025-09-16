@@ -1,31 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import Search from '@/components/search';
-import KeyStatistics from '@/components/KeyStatistics';
-import TrendingStocks from '@/components/TrendingStocks';
+
+import KeyStatistics from '@/features/KeyStatistics/KeyStatistics';
+import TrendingStocks from '@/features/TrendingStocks/TrendingStocks';
+import WatchlistTable from '@/features/Watchlist/WatchlistTable';
+import SearchBar from '@/components/SearchBar';
 import EmptyState from '@/components/EmptyState';
-import { useCompanyInformation, useQuoteData } from '@/hooks/useTickerData';
+
+import { useTickerData } from '@/contexts/TickerDataContext';
+import { WatchlistProvider } from '@/hooks/useWatchlist';
 
 export default function Home() {
   const [currentTicker, setCurrentTicker] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const {
-    data: companyData,
-    isLoading: companyLoading,
-    error: companyError
-  } = useCompanyInformation(currentTicker);
-  const {
-    data: quoteData,
-    isLoading: quoteLoading,
-    error: quoteError
-  } = useQuoteData(currentTicker);
-
-  const isLoading = companyLoading || quoteLoading;
-  const error = companyError || quoteError;
-
-  const hasResults = hasSearched;
+  const { companyData, quoteData, isLoading, error } = useTickerData(currentTicker);
 
   const handleSearch = (ticker: string) => {
     setCurrentTicker(ticker);
@@ -34,35 +24,36 @@ export default function Home() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <header className='bg-white shadow-sm border-b border-gray-200'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <div className='flex items-center gap-4'>
+      <header className='border-b border-gray-200 bg-white shadow-sm'>
+        <div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
+          <div className='flex items-center justify-between gap-4'>
             <h1 className='text-3xl font-bold text-gray-900'>ASX Company Information</h1>
+            <div className='w-full max-w-sm'>
+              <SearchBar onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        <div className='grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-8'>
-          {/* Left Column - Trending Stocks */}
-          <div>
+      <main className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
+        <div className='grid grid-cols-1 gap-8 lg:grid-cols-[minmax(350px,450px)_1fr]'>
+          <aside>
             <TrendingStocks onStockSelect={handleSearch} />
-          </div>
-
-          {/* Right Column - Search + Content */}
-          <div className='space-y-6'>
-            <Search onSearch={handleSearch} loading={isLoading} error={error?.message || ''} />
-
-            {!hasResults ? (
-              <EmptyState />
-            ) : (
-              <KeyStatistics
-                quoteData={quoteData || null}
-                loading={quoteLoading}
-                companyData={companyData || null}
-              />
-            )}
-          </div>
+          </aside>
+          <section className='space-y-8'>
+            <WatchlistProvider>
+              {!hasSearched ? (
+                <EmptyState />
+              ) : (
+                <KeyStatistics
+                  quoteData={quoteData}
+                  loading={isLoading}
+                  companyData={companyData}
+                />
+              )}
+              <WatchlistTable />
+            </WatchlistProvider>
+          </section>
         </div>
       </main>
     </div>

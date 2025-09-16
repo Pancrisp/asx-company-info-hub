@@ -9,20 +9,28 @@ export interface CompanyData {
 }
 
 export interface QuoteData {
-  symbol: string;
-  quote: {
-    mkt_value: number;
-    cf_last: number;
-    cf_open: number;
-    cf_low: number;
-    cf_high: number;
-    cf_close: number;
-    cf_volume: number;
-    cf_netchng: number;
-    pctchng: number;
-    yrhigh: number;
-    yrlow: number;
-    peratio: number;
-    earnings: number;
-  };
+  mkt_value: number;
+  cf_last: number;
+  cf_open: number;
+  cf_low: number;
+  cf_high: number;
+  cf_close: number;
+  cf_volume: number;
+  cf_netchng: number;
+  pctchng: number;
+  yrhigh: number;
+  yrlow: number;
+  peratio: number;
+  earnings: number;
+}
+
+export interface WatchlistItem {
+  ticker: string;
+  addedAt: Date;
+}
+
+export interface WatchlistQuoteResult {
+  ticker: string;
+  data: QuoteData | null;
+  error: Error | null;
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CompanyData } from '@/types/schema';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface CompanyInfoProps {
   companyData: CompanyData | null;
@@ -14,8 +14,8 @@ export default function CompanyInfo({ companyData, loading }: CompanyInfoProps) 
 
   if (loading) {
     return (
-      <div className='bg-white rounded-lg border border-gray-200 shadow-sm p-6'>
-        <h2 className='text-lg font-semibold text-gray-900 mb-4'>Company Information</h2>
+      <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <h2 className='mb-4 text-lg font-semibold text-gray-900'>Company Information</h2>
         <LoadingSpinner text='Loading company information...' />
       </div>
     );
@@ -34,13 +34,13 @@ export default function CompanyInfo({ companyData, loading }: CompanyInfoProps) 
   const displayDescription = isExpanded || !shouldTruncate ? description : truncatedDescription;
 
   return (
-    <section className='mt-4 pt-4 border-t border-gray-200'>
-      <div className='text-gray-700 leading-relaxed'>
+    <section className='mt-4 border-t border-gray-200 pt-4'>
+      <div className='leading-relaxed text-gray-700'>
         <p className='text-sm whitespace-pre-wrap'>{displayDescription}</p>
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className='mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:underline cursor-pointer'
+            className='mt-2 cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-800 focus:underline focus:outline-none'
           >
             {isExpanded ? 'Read less' : 'Read more'}
           </button>

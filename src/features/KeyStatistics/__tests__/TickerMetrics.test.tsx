@@ -51,8 +51,8 @@ describe('TickerMetrics Component', () => {
     const label = screen.getByText('Test Metric');
     const value = screen.getByText('Test Value');
 
-    expect(label).toHaveClass('text-sm', 'text-gray-500');
-    expect(value).toHaveClass('text-md', 'font-semibold', 'text-gray-900');
+    expect(label).toHaveClass('text-xs', 'text-gray-500');
+    expect(value).toHaveClass('text-sm', 'font-semibold', 'text-gray-900');
   });
 
   describe('formatter functions', () => {
