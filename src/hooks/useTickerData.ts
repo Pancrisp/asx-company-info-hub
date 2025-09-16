@@ -24,56 +24,6 @@ export function useCompanyInformation(ticker: string) {
   });
 }
 
-export function useQuoteData(ticker: string) {
-  return useQuery({
-    queryKey: ['quoteData', ticker.toUpperCase()],
-    queryFn: () => fetchQuoteData(ticker),
-    enabled: !!ticker && ticker.length >= 3,
-    staleTime: () => {
-      return isMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
-    },
-    gcTime: 2 * 60 * 60 * 1000,
-    retry: 2,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchInterval: () => {
-      return isMarketHours() ? 1 * 60 * 1000 : 60 * 60 * 1000;
-    },
-    refetchIntervalInBackground: false
-  });
-}
-
-export function useCompanyData(ticker: string) {
-  return useQuery({
-    queryKey: ['companyData', ticker.toUpperCase()],
-    queryFn: async () => {
-      const [companyResult, quoteResult] = await Promise.allSettled([
-        fetchCompanyInformation(ticker),
-        fetchQuoteData(ticker)
-      ]);
-
-      if (companyResult.status === 'rejected' && quoteResult.status === 'rejected') {
-        throw quoteResult.reason;
-      }
-      if (companyResult.status === 'rejected') {
-        throw companyResult.reason;
-      }
-      if (quoteResult.status === 'rejected') {
-        throw quoteResult.reason;
-      }
-
-      return {
-        company: companyResult.value,
-        quote: quoteResult.value
-      };
-    },
-    enabled: !!ticker && ticker.length >= 3,
-    staleTime: 5 * 60 * 1000,
-    gcTime: Infinity,
-    retry: 2,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
-  });
-}
-
 export function useMultipleQuoteData(tickers: string[]) {
   const queries = useQueries({
     queries: tickers.map(ticker => ({
@@ -92,13 +42,11 @@ export function useMultipleQuoteData(tickers: string[]) {
     }))
   });
 
-  // Create O(1) lookup map for ticker indices
   const tickerIndexMap = new Map<string, number>();
   tickers.forEach((ticker, index) => {
     tickerIndexMap.set(ticker.toUpperCase(), index);
   });
 
-  // Transform results to match the existing interface
   const data = queries.map((query, index) => ({
     ticker: tickers[index].toUpperCase(),
     data: query.data || null,
@@ -108,11 +56,11 @@ export function useMultipleQuoteData(tickers: string[]) {
   const isLoading = queries.some(query => query.isLoading);
   const error = queries.find(query => query.error)?.error || null;
 
-  const getIsLoading = (ticker: string): boolean => {
+  const isQuoteLoading = (ticker: string): boolean => {
     const index = tickerIndexMap.get(ticker.toUpperCase());
     if (index === undefined) return false;
     return queries[index]?.isLoading || false;
   };
 
-  return { data, isLoading, error, getIsLoading };
+  return { data, isLoading, isQuoteLoading, error };
 }

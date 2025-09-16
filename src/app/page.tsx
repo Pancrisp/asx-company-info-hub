@@ -47,7 +47,7 @@ export default function Home() {
                 companyData={companyData}
                 showEmptyState={!hasSearched}
               />
-              <WatchlistTable />
+              <WatchlistTable onTickerSelect={handleSearch} />
             </WatchlistProvider>
           </section>
         </div>

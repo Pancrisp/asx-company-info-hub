@@ -6,14 +6,14 @@ import { useTickerPrice } from '@/contexts/TickerDataContext';
 interface StockItemProps {
   ticker: string;
   name: string;
+  isLoading: boolean;
   onClick: () => void;
 }
 
-export default function StockItem({ ticker, name, onClick }: StockItemProps) {
-  const { getQuoteData, isLoading, error } = useTickerPrice();
+export default function StockItem({ ticker, name, isLoading, onClick }: StockItemProps) {
+  const { getQuoteData, error } = useTickerPrice();
   const quoteData = getQuoteData(ticker);
   const tickerError = error(ticker);
-  const tickerLoading = isLoading(ticker);
 
   const price = quoteData?.cf_last;
   const change = quoteData?.cf_netchng;
@@ -27,7 +27,7 @@ export default function StockItem({ ticker, name, onClick }: StockItemProps) {
 
   const priceChangeStyle = priceChangeColourPicker();
 
-  if (tickerLoading) {
+  if (isLoading) {
     return (
       <div className='w-full border-b border-gray-300 bg-white px-4 py-3 first:rounded-t-md last:rounded-b-md last:border-b-0'>
         <div className='flex items-center justify-between'>

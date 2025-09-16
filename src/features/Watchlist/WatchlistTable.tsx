@@ -1,8 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
-import { useWatchlist } from '@/hooks/useWatchlist';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { TrashIcon } from '@heroicons/react/24/outline';
 import {
   formatCurrency,
   formatMarketValue,
@@ -10,12 +9,19 @@ import {
   formatRatio,
   formatPercentFromHigh
 } from '@/lib/api';
-import { TrashIcon } from '@heroicons/react/24/outline';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { useWatchlist } from '@/hooks/useWatchlist';
+import { useTickerPrice } from '@/contexts/TickerDataContext';
 
-export default function WatchlistTable() {
+import { Skeleton } from '../../components/Skeleton';
+
+interface WatchlistTableProps {
+  onTickerSelect?: (ticker: string) => void;
+}
+
+export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) {
   const { watchlist, removeFromWatchlist } = useWatchlist();
-  const { getQuoteData, isLoading } = useTickerPrice();
+  const { getQuoteData, isTickerLoading } = useTickerPrice();
+  const isWatchlistLoading = isTickerLoading(watchlist);
 
   if (watchlist.length === 0) {
     return (
@@ -31,14 +37,71 @@ export default function WatchlistTable() {
     );
   }
 
-  const hasAnyLoading = watchlist.some(ticker => isLoading(ticker));
-
-  if (hasAnyLoading) {
+  if (isWatchlistLoading) {
     return (
       <Fragment>
         <h2 className='mb-4 text-lg font-semibold text-gray-900'>Watchlist</h2>
-        <div className='rounded-md border border-gray-300 bg-white p-6'>
-          <LoadingSpinner text='Loading watchlist data...' />
+        <div className='overflow-hidden rounded-md border border-gray-300 bg-white'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    Ticker
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    Price
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    Change
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    Market Cap
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    P/E Ratio
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    EPS
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
+                    From 52wk High
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'></th>
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white'>
+                {watchlist.map(ticker => (
+                  <tr key={ticker}>
+                    <td className='px-6 py-2 text-sm font-medium whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-12' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-16' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-12' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-16' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-10' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-14' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-12' />
+                    </td>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
+                      <Skeleton className='h-4 w-4' />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </Fragment>
     );
@@ -70,7 +133,7 @@ export default function WatchlistTable() {
                   Price
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
-                  % Change
+                  Change
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
                   Market Cap
@@ -82,11 +145,9 @@ export default function WatchlistTable() {
                   EPS
                 </th>
                 <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
-                  % from 52wk High
+                  From 52wk High
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'>
-                  Action
-                </th>
+                <th className='py-3 pr-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase'></th>
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200 bg-white'>
@@ -106,37 +167,58 @@ export default function WatchlistTable() {
                     : 'text-gray-600';
 
                 return (
-                  <tr key={item.ticker} className='hover:bg-gray-50'>
-                    <td className='px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900'>
+                  <tr
+                    key={item.ticker}
+                    className='group cursor-pointer hover:bg-gray-50'
+                    onClick={() => onTickerSelect?.(item.ticker)}
+                    role='button'
+                    tabIndex={0}
+                    aria-label={`View details for ${item.ticker}`}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        onTickerSelect?.(item.ticker);
+                      }
+                    }}
+                  >
+                    <td className='px-6 py-2 text-sm font-medium whitespace-nowrap text-gray-900'>
                       {item.ticker}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       {formatCurrency(quoteData.cf_last)}
                     </td>
                     <td
-                      className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${priceChangeColor}`}
+                      className={`px-6 py-2 text-sm font-medium whitespace-nowrap ${priceChangeColor}`}
                     >
                       {formatPercentage(quoteData.pctchng)}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       {formatMarketValue(quoteData.mkt_value)}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       {formatRatio(quoteData.peratio)}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       {formatCurrency(quoteData.earnings)}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       {formatPercentFromHigh(percentFromHigh)}
                     </td>
-                    <td className='px-6 py-4 text-sm whitespace-nowrap text-gray-900'>
+                    <td className='px-6 py-2 text-sm whitespace-nowrap text-gray-900'>
                       <button
-                        onClick={() => removeFromWatchlist(item.ticker)}
                         className='rounded p-1 transition-colors hover:bg-gray-100'
                         aria-label={`Remove ${item.ticker} from watchlist`}
+                        onClick={e => {
+                          e.stopPropagation();
+                          removeFromWatchlist(item.ticker);
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            removeFromWatchlist(item.ticker);
+                          }
+                        }}
                       >
-                        <TrashIcon className='h-4 w-4 text-gray-400 hover:text-red-600' />
+                        <TrashIcon className='h-4 w-4 cursor-pointer text-gray-400 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:text-red-600 focus:text-red-600' />
                       </button>
                     </td>
                   </tr>

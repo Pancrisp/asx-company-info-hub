@@ -7,7 +7,8 @@ import { POPULAR_STOCKS } from '@/data/stocks';
 
 interface TickerDataContextValue {
   getQuoteData: (ticker: string) => QuoteData | null;
-  isLoading: (ticker: string) => boolean;
+  isLoading: boolean;
+  isTickerLoading: (tickers: string[]) => boolean;
   error: (ticker: string) => Error | null;
   watchTickers: (tickers: string[]) => void;
   unwatchTickers: (tickers: string[]) => void;
@@ -57,10 +58,15 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     return tickerData?.data || null;
   };
 
-  const isLoading = (ticker: string): boolean => {
-    const upperTicker = ticker.toUpperCase();
-    if (!watchedTickers.includes(upperTicker)) return false;
-    return multipleQuoteQuery.getIsLoading ? multipleQuoteQuery.getIsLoading(ticker) : false;
+  const isLoading = multipleQuoteQuery.isLoading;
+
+  const isTickerLoading = (tickers: string[]): boolean => {
+    if (!multipleQuoteQuery.isQuoteLoading) return false;
+    return tickers.some(ticker => {
+      const upperTicker = ticker.toUpperCase();
+      if (!watchedTickers.includes(upperTicker)) return false;
+      return multipleQuoteQuery.isQuoteLoading(ticker);
+    });
   };
 
   const error = (ticker: string): Error | null => {
@@ -89,6 +95,7 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   const value: TickerDataContextValue = {
     getQuoteData,
     isLoading,
+    isTickerLoading,
     error,
     watchTickers,
     unwatchTickers,
@@ -108,7 +115,7 @@ export function useTickerPrice() {
 
 export function useTickerData(ticker: string) {
   const context = useTickerPrice();
-  const { getQuoteData, isLoading, error, watchTickers } = context;
+  const { getQuoteData, isTickerLoading, error, watchTickers } = context;
   const companyQuery = useCompanyInformation(ticker);
 
   // Only watch the ticker if it's not already being watched by the provider
@@ -121,7 +128,7 @@ export function useTickerData(ticker: string) {
   return {
     companyData: companyQuery.data || null,
     quoteData: getQuoteData(ticker),
-    isLoading: companyQuery.isLoading || isLoading(ticker),
+    isLoading: companyQuery.isLoading || isTickerLoading([ticker]),
     error: companyQuery.error || error(ticker)
   };
 }
