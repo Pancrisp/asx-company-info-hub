@@ -1,8 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import TickerMetrics from '../TickerMetrics';
 
-const mockFormatter = jest.fn((value: number) => `Formatted: ${value}`);
-
 describe('TickerMetrics Component', () => {
   test('renders label and value with string value', () => {
     render(<TickerMetrics label='Test Label' value='123.45' />);
@@ -56,6 +54,8 @@ describe('TickerMetrics Component', () => {
   });
 
   describe('formatter functions', () => {
+    const mockFormatter = jest.fn((value: number) => `Formatted: ${value}`);
+
     beforeEach(() => {
       mockFormatter.mockClear();
     });

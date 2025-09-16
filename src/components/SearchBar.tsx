@@ -21,8 +21,8 @@ interface SearchComponentProps {
 }
 
 export default function Search({ onSearch, loading, error }: SearchComponentProps) {
-  const [validationError, setValidationError] = useState<string>('');
-  const [inputValue, setInputValue] = useState<string>('');
+  const [validationError, setValidationError] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +52,6 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
       inputRef.current?.blur();
       return;
     }
-
     if (e.key !== 'Enter') return;
 
     const stock = formatTicker(inputValue);
@@ -69,6 +68,11 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
 
     setValidationError('');
     onSearch(stock);
+    requestAnimationFrame(() => {
+      setInputValue('');
+      setSelectedStock(null);
+      inputRef.current?.blur();
+    });
   };
 
   const handleInputChange = (value: string) => {
@@ -92,6 +96,9 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     const ticker = formatTicker(stock.ticker);
     if (ticker && isValidTicker(ticker)) {
       onSearch(ticker);
+      // Clear input immediately for better UX
+      setInputValue('');
+      setSelectedStock(null);
     }
   };
 
@@ -99,9 +106,13 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     <div className='mx-auto w-full max-w-sm'>
       <Combobox immediate value={selectedStock} onChange={handleStockSelect}>
         <div className='relative'>
+          <ComboboxButton className='group absolute inset-y-0 left-0 px-3 py-3 text-gray-500'>
+            <MagnifyingGlassIcon className='size-5' />
+          </ComboboxButton>
+
           <ComboboxInput
             ref={inputRef}
-            className='w-full rounded-lg border px-3 py-3 text-gray-900 placeholder-gray-500'
+            className='w-full rounded-md border border-gray-300 py-3 pr-3 pl-10 text-gray-900 placeholder-gray-500'
             displayValue={(stock: Stock) => stock?.ticker || inputValue}
             onChange={e => handleInputChange(e.target.value)}
             onKeyDown={e => handleSearch(e)}
@@ -109,15 +120,20 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
             disabled={loading}
           />
 
-          <ComboboxButton className='group absolute inset-y-0 right-0 px-3 py-3 text-gray-500'>
-            <MagnifyingGlassIcon className='size-5' />
-          </ComboboxButton>
-
-          <ComboboxOptions className='absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
+          <ComboboxOptions
+            transition
+            className='absolute top-full right-0 left-0 z-50 mt-1 max-h-74 origin-top overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg transition duration-100 ease-out [-ms-overflow-style:none] [scrollbar-width:none] empty:invisible data-closed:scale-95 data-closed:opacity-0 [&::-webkit-scrollbar]:hidden'
+          >
             {filteredStocks.length === 0 ? (
-              <p className='m-0 px-4 py-3 text-gray-900'>
-                Search for ticker <strong>{inputValue}</strong>
-              </p>
+              <ComboboxOption
+                key={inputValue}
+                className='flex min-h-[44px] w-full cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-3 text-left last:border-b-0 data-[focus]:bg-gray-50'
+                value={{ ticker: inputValue, name: inputValue }}
+              >
+                <p className='text-gray-900'>
+                  Search for <strong>{inputValue}</strong> ticker symbol
+                </p>
+              </ComboboxOption>
             ) : (
               filteredStocks.map(stock => (
                 <ComboboxOption

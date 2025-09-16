@@ -23,14 +23,3 @@ export interface QuoteData {
   peratio: number;
   earnings: number;
 }
-
-export interface WatchlistItem {
-  ticker: string;
-  addedAt: Date;
-}
-
-export interface WatchlistQuoteResult {
-  ticker: string;
-  data: QuoteData | null;
-  error: Error | null;
-}

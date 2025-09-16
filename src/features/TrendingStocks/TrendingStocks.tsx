@@ -2,6 +2,7 @@
 
 import { Fragment } from 'react';
 import { POPULAR_STOCKS } from '@/data/stocks';
+import { useTickerPrice } from '@/contexts/TickerDataContext';
 import StockItem from './StockItem';
 
 interface TrendingStocksProps {
@@ -9,7 +10,9 @@ interface TrendingStocksProps {
 }
 
 export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
+  const { isTickerLoading } = useTickerPrice();
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
+  const isTrendingTickersLoading = isTickerLoading(trendingTickers);
 
   const getStockByTicker = (ticker: string) => {
     return POPULAR_STOCKS.find(stock => stock.ticker === ticker);
@@ -18,7 +21,10 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
   return (
     <Fragment>
       <h2 className='mb-4 text-lg font-semibold text-gray-900'>Trending stocks</h2>
-      <div className='rounded-md border border-gray-300 bg-white'>
+      <aside
+        aria-label='A list of trending stocks'
+        className='rounded-md border border-gray-300 bg-white'
+      >
         {trendingTickers.map(ticker => {
           const stock = getStockByTicker(ticker);
 
@@ -30,10 +36,11 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
               ticker={ticker}
               name={stock.name}
               onClick={() => onStockSelect(ticker)}
+              isLoading={isTrendingTickersLoading}
             />
           );
         })}
-      </div>
+      </aside>
     </Fragment>
   );
 }
