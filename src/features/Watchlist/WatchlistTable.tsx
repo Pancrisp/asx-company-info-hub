@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, BookmarkIcon } from '@heroicons/react/24/outline';
 import {
   formatCurrency,
   formatMarketValue,
@@ -71,7 +71,9 @@ export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) 
       <tr>
         <td colSpan={8} className='px-6 py-8 text-center'>
           <p className='text-gray-500'>Your watchlist is empty</p>
-          <p className='mt-1 text-sm text-gray-400'>Add stocks by clicking the bookmark icon</p>
+          <p className='mt-1 text-sm text-gray-500'>
+            Add stocks by clicking the <BookmarkIcon className='inline h-4 w-4' /> icon
+          </p>
         </td>
       </tr>
     );

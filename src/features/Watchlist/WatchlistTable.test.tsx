@@ -67,7 +67,7 @@ describe('WatchlistTable', () => {
 
       expect(screen.getByText('Watchlist')).toBeInTheDocument();
       expect(screen.getByText('Your watchlist is empty')).toBeInTheDocument();
-      expect(screen.getByText('Add stocks by clicking the bookmark icon')).toBeInTheDocument();
+      expect(screen.getByText(/Add stocks by clicking the.*icon/)).toBeInTheDocument();
 
       expect(screen.getByRole('table')).toBeInTheDocument();
       expect(screen.getByText('Ticker')).toBeInTheDocument();
