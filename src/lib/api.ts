@@ -75,7 +75,6 @@ export async function fetchQuoteData(ticker: string): Promise<QuoteData> {
 }
 
 export function isValidTicker(ticker: string): boolean {
-  // Check if ticker is at least 3 characters and contains only alphanumeric characters
   const trimmedTicker = ticker.trim();
   return /^[A-Z0-9]{3,}$/i.test(trimmedTicker);
 }
@@ -106,6 +105,15 @@ export function formatMarketValue(value: number): string {
     return `$${(value / 1_000).toFixed(2)}K`;
   }
   return formatCurrency(value);
+}
+
+export function formatVolume(value: number): string {
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}M`;
+  } else if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(1)}K`;
+  }
+  return value.toLocaleString();
 }
 
 export function formatPercentage(value: number): string {

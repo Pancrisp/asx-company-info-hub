@@ -9,6 +9,7 @@
   --text-primary: #212529;
   --text-secondary: #6c757d;
   --positive-green: #198754;
+  --neutral-yellow: #eab308;
   --negative-red: #dc3545;
   --unchanged-gray: #6b7280;
   --hover-green: #1a5a4a;
@@ -24,7 +25,10 @@
 body {
   background: var(--background-gray);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .single-column {
