@@ -27,9 +27,19 @@ export default function StockItem({ ticker, name, isLoading, onClick }: StockIte
 
   const priceChangeStyle = priceChangeColourPicker();
 
+  const changeDirection = () => {
+    if (!change || !percentage) return 'neutral';
+    return percentage > 0 ? 'positive' : percentage < 0 ? 'negative' : 'neutral';
+  };
+
   if (isLoading) {
     return (
-      <div className='w-full border-b border-gray-300 bg-white px-4 py-3 first:rounded-t-md last:rounded-b-md last:border-b-0'>
+      <div
+        className='w-full border-b border-gray-300 bg-white px-4 py-3 first:rounded-t-md last:rounded-b-md last:border-b-0'
+        data-testid='stock-item'
+        data-ticker={ticker}
+        data-loading='true'
+      >
         <div className='flex items-center justify-between'>
           <div className='min-w-0 flex-1'>
             <div className='font-medium text-gray-900'>{ticker}</div>
@@ -46,7 +56,12 @@ export default function StockItem({ ticker, name, isLoading, onClick }: StockIte
 
   if (tickerError) {
     return (
-      <div className='w-full border-b border-gray-300 bg-white px-4 py-3 opacity-50 first:rounded-t-md last:rounded-b-md last:border-b-0'>
+      <div
+        className='w-full border-b border-gray-300 bg-white px-4 py-3 opacity-50 first:rounded-t-md last:rounded-b-md last:border-b-0'
+        data-testid='stock-item'
+        data-ticker={ticker}
+        data-error='true'
+      >
         <div className='flex items-center justify-between'>
           <div className='min-w-0 flex-1'>
             <div className='font-medium text-gray-900'>{ticker}</div>
@@ -64,6 +79,10 @@ export default function StockItem({ ticker, name, isLoading, onClick }: StockIte
     <button
       onClick={onClick}
       className='w-full border-b border-gray-300 bg-white px-4 py-3 text-left transition-all duration-100 first:rounded-t-md last:rounded-b-md last:border-b-0 hover:cursor-pointer hover:bg-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+      data-testid='stock-item'
+      data-ticker={ticker}
+      data-price-direction={changeDirection()}
+      data-interactive='true'
     >
       <div className='flex items-center justify-between'>
         <div className='min-w-0 flex-1'>

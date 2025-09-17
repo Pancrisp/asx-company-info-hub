@@ -24,6 +24,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
       <aside
         aria-label='A list of trending stocks'
         className='rounded-md border border-gray-300 bg-white'
+        data-testid="trending-stocks-container"
       >
         {trendingTickers.map(ticker => {
           const stock = getStockByTicker(ticker);
