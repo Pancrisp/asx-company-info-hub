@@ -36,7 +36,7 @@ export function useMultipleQuoteData(tickers: string[]) {
       gcTime: 2 * 60 * 60 * 1000,
       retry: 1,
       refetchInterval: () => {
-        return isMarketHours() ? 1 * 60 * 1000 : 60 * 60 * 1000;
+        return isMarketHours() ? 2 * 60 * 1000 : 60 * 60 * 1000;
       },
       refetchIntervalInBackground: false
     }))
