@@ -87,12 +87,17 @@ export default function TickerCard({
       >
         <div className='flex min-h-[400px] flex-col justify-center text-center'>
           <div className='mx-auto max-w-sm'>
-            <div className='space-y-2'>
-              <p className='font-medium text-gray-600'>
-                Select a stock from the left or your watchlist
+            <div className='space-y-6'>
+              <p className='text-sm text-gray-600'>
+                Choose a stock from the trending list or your watchlist to view detailed metrics.
               </p>
-              <p className='text-sm text-gray-500'>OR</p>
-              <p className='font-medium text-gray-600'>Press / to search for an ASX ticker</p>
+              <p className='text-sm text-gray-600'>
+                Alternatively, press{' '}
+                <kbd className='inline-flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-gray-100 text-xs font-medium text-gray-600'>
+                  /
+                </kbd>{' '}
+                to search for any ASX stock
+              </p>
             </div>
           </div>
         </div>

@@ -52,6 +52,7 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
       inputRef.current?.blur();
       return;
     }
+
     if (e.key !== 'Enter') return;
 
     const stock = formatTicker(inputValue);
@@ -96,7 +97,6 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     const ticker = formatTicker(stock.ticker);
     if (ticker && isValidTicker(ticker)) {
       onSearch(ticker);
-      // Clear input immediately for better UX
       setInputValue('');
       setSelectedStock(null);
     }
@@ -112,13 +112,21 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
 
           <ComboboxInput
             ref={inputRef}
-            className='w-full rounded-md border border-gray-300 py-3 pr-3 pl-10 text-gray-900 placeholder-gray-500'
-            displayValue={(stock: Stock) => stock?.ticker || inputValue}
+            className='w-full rounded-md border border-gray-300 py-3 pr-16 pl-10 text-sm text-gray-900 placeholder-gray-500'
+            value={inputValue}
             onChange={e => handleInputChange(e.target.value)}
             onKeyDown={e => handleSearch(e)}
-            placeholder='Search for ticker'
+            placeholder='Search for an ASX stock'
             disabled={loading}
           />
+
+          <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3'>
+            <span className='text-sm text-gray-400'>
+              <kbd className='inline-flex h-5 w-5 items-center justify-center rounded border border-gray-300 bg-gray-100 text-xs font-medium text-gray-600'>
+                /
+              </kbd>
+            </span>
+          </div>
 
           <ComboboxOptions
             transition
