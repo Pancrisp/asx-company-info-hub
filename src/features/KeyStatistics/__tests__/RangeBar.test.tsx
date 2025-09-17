@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import RangeBar from '../RangeBar';
 import * as api from '@/lib/api';
 
-// Mock the formatCurrency function
 jest.mock('@/lib/api', () => ({
   formatCurrency: jest.fn((value: number) => `$${value.toFixed(2)}`)
 }));
