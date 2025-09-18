@@ -6,11 +6,18 @@ import { CompanyData } from '@/types/schema';
 
 const mockToggleWatchlist = jest.fn();
 const mockIsInWatchlist = jest.fn();
+const mockSetCurrentlyDisplayedTicker = jest.fn();
 
 jest.mock('@/hooks/useWatchlist', () => ({
   useWatchlist: () => ({
     isInWatchlist: mockIsInWatchlist,
     toggleWatchlist: mockToggleWatchlist
+  })
+}));
+
+jest.mock('@/contexts/TickerDataContext', () => ({
+  useTickerPrice: () => ({
+    setCurrentlyDisplayedTicker: mockSetCurrentlyDisplayedTicker
   })
 }));
 
@@ -389,6 +396,115 @@ describe('TickerCard', () => {
 
       const percentFromHighMetric = screen.getByTestId('metric-%-from-52wk-high');
       expect(percentFromHighMetric).toBeInTheDocument();
+    });
+  });
+
+  describe('currently displayed ticker tracking', () => {
+    it('should set currently displayed ticker when company data is available', () => {
+      render(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={mockCompanyData}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).toHaveBeenCalledWith('CBA');
+    });
+
+    it('should not set currently displayed ticker when company data is null', () => {
+      render(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={null}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).not.toHaveBeenCalled();
+    });
+
+    it('should clear currently displayed ticker on unmount', () => {
+      const { unmount } = render(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={mockCompanyData}
+        />
+      );
+
+      unmount();
+
+      expect(mockSetCurrentlyDisplayedTicker).toHaveBeenCalledWith(null);
+    });
+
+    it('should update currently displayed ticker when company data changes', () => {
+      const { rerender } = render(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={mockCompanyData}
+        />
+      );
+
+      const newCompanyData = { ...mockCompanyData, ticker: 'WBC' };
+
+      rerender(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={newCompanyData}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).toHaveBeenCalledWith('WBC');
+    });
+
+    it('should clear currently displayed ticker when company data becomes null', () => {
+      const { rerender } = render(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={mockCompanyData}
+        />
+      );
+
+      rerender(
+        <TickerCard
+          quoteData={mockQuoteData}
+          loading={false}
+          companyData={null}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).toHaveBeenCalledWith(null);
+    });
+
+    it('should not call setCurrentlyDisplayedTicker during loading state', () => {
+      render(
+        <TickerCard
+          quoteData={null}
+          loading={true}
+          companyData={mockCompanyData}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).toHaveBeenCalledWith('CBA');
+    });
+
+    it('should not call setCurrentlyDisplayedTicker in empty state', () => {
+      mockSetCurrentlyDisplayedTicker.mockClear();
+
+      render(
+        <TickerCard
+          quoteData={null}
+          loading={false}
+          companyData={null}
+          showEmptyState={true}
+        />
+      );
+
+      expect(mockSetCurrentlyDisplayedTicker).not.toHaveBeenCalled();
     });
   });
 });

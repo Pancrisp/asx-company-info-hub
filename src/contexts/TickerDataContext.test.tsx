@@ -428,6 +428,240 @@ describe('TickerDataContext', () => {
     });
   });
 
+  describe('setCurrentlyDisplayedTicker functionality', () => {
+    it('should set currently displayed ticker', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.setCurrentlyDisplayedTicker('TEST');
+      });
+
+      expect(result.current.setCurrentlyDisplayedTicker).toBeDefined();
+    });
+
+    it('should clear currently displayed ticker', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.setCurrentlyDisplayedTicker('TEST');
+      });
+
+      act(() => {
+        result.current.setCurrentlyDisplayedTicker(null);
+      });
+
+      expect(result.current.setCurrentlyDisplayedTicker).toBeDefined();
+    });
+  });
+
+  describe('cleanupTickers functionality', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should preserve trending stocks during cleanup', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['TEST']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(4 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+      const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
+      trendingTickers.forEach(ticker => {
+        expect(result.current.watchedTickers).toContain(ticker);
+      });
+    });
+
+    it('should preserve watchlisted tickers during cleanup', () => {
+      const storedTickers = ['SAVED'];
+      localStorage.setItem('asx-watchlist', JSON.stringify(storedTickers));
+
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['TEMP']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(4 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+      expect(result.current.watchedTickers).toContain('SAVED');
+    });
+
+    it('should preserve currently displayed ticker during cleanup', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['DISPLAYED']);
+        result.current.setCurrentlyDisplayedTicker('DISPLAYED');
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(4 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+
+      expect(result.current.watchedTickers).toContain('DISPLAYED');
+    });
+
+    it('should remove expired temporary tickers during cleanup', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['TEMP']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(4 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+
+      expect(result.current.watchedTickers).not.toContain('TEMP');
+    });
+
+    it('should keep recent temporary tickers during cleanup', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['RECENT']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(1 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+
+      expect(result.current.watchedTickers).toContain('RECENT');
+    });
+  });
+
+  describe('periodic cleanup timer', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should run cleanup periodically', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['TEMP']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(4 * 60 * 1000);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(3 * 60 * 1000);
+      });
+      expect(result.current.watchedTickers).not.toContain('TEMP');
+    });
+
+    it('should clear cleanup timer on unmount', () => {
+      const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+
+      const Wrapper = createWrapper();
+      const { unmount } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      unmount();
+
+      expect(clearIntervalSpy).toHaveBeenCalled();
+      clearIntervalSpy.mockRestore();
+    });
+  });
+
+  describe('ticker timestamp tracking', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should track timestamp when tickers are watched', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['TRACKED']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(2 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+
+      expect(result.current.watchedTickers).toContain('TRACKED');
+    });
+
+    it('should update timestamp on repeated watch calls', () => {
+      const Wrapper = createWrapper();
+      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+
+      act(() => {
+        result.current.watchTickers(['REFRESHED']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(2 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.watchTickers(['REFRESHED']);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(2 * 60 * 1000);
+      });
+
+      act(() => {
+        result.current.cleanupTickers();
+      });
+
+      expect(result.current.watchedTickers).toContain('REFRESHED');
+    });
+  });
+
   describe('integration with React Query', () => {
     it('should call useMultipleQuoteData with watched tickers', () => {
       const Wrapper = createWrapper();
