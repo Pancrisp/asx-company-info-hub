@@ -1,20 +1,23 @@
 'use client';
 
+import { useEffect } from 'react';
 import { BookmarkIcon as BookmarkIconSolid } from '@heroicons/react/24/solid';
 import { BookmarkIcon as BookmarkIconOutline } from '@heroicons/react/24/outline';
-import RangeBar from './RangeBar';
-import TickerMetrics from './TickerMetrics';
 import {
   formatCurrency,
   formatNumber,
   formatMarketValue,
   formatPercentage,
+  formatPercentFromHigh,
   formatRatio,
-  formatPercentFromHigh
+  formatTicker
 } from '@/lib/api';
-import { useWatchlist } from '@/hooks/useWatchlist';
 import { QuoteData, CompanyData } from '@/types/schema';
+import { useWatchlist } from '@/hooks/useWatchlist';
+import { useTickerPrice } from '@/contexts/TickerDataContext';
 import { Skeleton } from '../../components/Skeleton';
+import RangeBar from './RangeBar';
+import TickerMetrics from './TickerMetrics';
 import CompanyInfo from './CompanyInfo';
 
 interface TickerCardProps {
@@ -31,6 +34,18 @@ export default function TickerCard({
   showEmptyState = false
 }: TickerCardProps) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
+  const { setCurrentlyDisplayedTicker } = useTickerPrice();
+
+  useEffect(() => {
+    const ticker = companyData?.ticker;
+    if (ticker) {
+      setCurrentlyDisplayedTicker(formatTicker(ticker));
+    }
+
+    return () => {
+      setCurrentlyDisplayedTicker(null);
+    };
+  }, [companyData?.ticker, setCurrentlyDisplayedTicker]);
 
   if (loading) {
     return (
