@@ -35,27 +35,31 @@ interface TickerDataProviderProps {
 
 const WATCHLIST_STORAGE_KEY = 'asx-watchlist';
 
+// Helper function to load watchlisted tickers from localStorage
+const loadWatchlistedTickers = (): string[] => {
+  try {
+    if (typeof window !== 'undefined') {
+      const tickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+      if (tickers) {
+        const parsedTickers = JSON.parse(tickers);
+        if (Array.isArray(parsedTickers)) {
+          return parsedTickers.map(t => formatTicker(t));
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load watchlisted tickers from localStorage:', error);
+  }
+  return [];
+};
+
 export function TickerDataProvider({ children }: TickerDataProviderProps) {
   const tickerAccessTimesRef = useRef<Map<string, number>>(new Map());
   const [currentlyDisplayedTicker, setCurrentlyDisplayedTicker] = useState<string | null>(null);
 
   const [watchedTickers, setWatchedTickers] = useState<string[]>(() => {
     const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => formatTicker(stock.ticker));
-
-    const watchlistedTickers: string[] = [];
-    try {
-      if (typeof window !== 'undefined') {
-        const tickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
-        if (tickers) {
-          const parsedTickers = JSON.parse(tickers);
-          if (Array.isArray(parsedTickers)) {
-            watchlistedTickers.push(...parsedTickers.map(t => formatTicker(t)));
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load watchlisted tickers from localStorage:', error);
-    }
+    const watchlistedTickers = loadWatchlistedTickers();
 
     const allTickers = [...trendingTickers, ...watchlistedTickers];
     return Array.from(new Set(allTickers));
@@ -89,16 +93,19 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     return quoteDataMap.get(formatTicker(ticker)) || null;
   }, [quoteDataMap]);
 
+  // Memoize watched tickers set for faster lookups
+  const watchedTickersSet = useMemo(() => new Set(watchedTickers), [watchedTickers]);
+
   const isLoading = multipleQuoteQuery.isLoading;
 
   const isTickerLoading = useCallback((tickers: string[]): boolean => {
     if (!multipleQuoteQuery.isQuoteLoading) return false;
     return tickers.some(ticker => {
       const formattedTicker = formatTicker(ticker);
-      if (!watchedTickers.includes(formattedTicker)) return false;
+      if (!watchedTickersSet.has(formattedTicker)) return false;
       return multipleQuoteQuery.isQuoteLoading(ticker);
     });
-  }, [multipleQuoteQuery, watchedTickers]);
+  }, [multipleQuoteQuery, watchedTickersSet]);
 
   const error = useCallback((ticker: string): Error | null => {
     if (!multipleQuoteQuery.data) return multipleQuoteQuery.error;
@@ -106,47 +113,31 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   }, [errorMap, multipleQuoteQuery.data, multipleQuoteQuery.error]);
 
   const cleanupTickers = useCallback(() => {
-    const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
-
-    let watchlistedTickers: string[] = [];
-    try {
-      if (typeof window !== 'undefined') {
-        const tickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
-        if (tickers) {
-          const parsedTickers = JSON.parse(tickers);
-          if (Array.isArray(parsedTickers)) {
-            watchlistedTickers = parsedTickers.map(t => formatTicker(t));
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load watchlisted tickers from localStorage:', error);
-    }
+    const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => formatTicker(stock.ticker));
+    const watchlistedTickers = loadWatchlistedTickers();
 
     const persistentTickers = [...trendingTickers, ...watchlistedTickers];
-    const persistentTickersSet = new Set(persistentTickers.map(t => formatTicker(t)));
+    const persistentTickersSet = new Set(persistentTickers);
     const now = Date.now();
     const THREE_MINUTES = 3 * 60 * 1000;
 
     setWatchedTickers(prev => {
       return prev.filter(ticker => {
-        const formattedTicker = formatTicker(ticker);
-
-        if (persistentTickersSet.has(formattedTicker)) {
+        if (persistentTickersSet.has(ticker)) {
           return true;
         }
-        if (currentlyDisplayedTicker === formattedTicker) {
+        if (currentlyDisplayedTicker === ticker) {
           return true;
         }
 
-        const lastAccess = tickerAccessTimesRef.current.get(formattedTicker);
+        const lastAccess = tickerAccessTimesRef.current.get(ticker);
         if (!lastAccess) {
           return false;
         }
 
         const isExpired = now - lastAccess > THREE_MINUTES;
         if (isExpired) {
-          tickerAccessTimesRef.current.delete(formattedTicker);
+          tickerAccessTimesRef.current.delete(ticker);
           return false;
         }
 
@@ -174,7 +165,8 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     });
 
     setWatchedTickers(prev => {
-      const newTickers = formattedTickers.filter(t => !prev.includes(t));
+      const prevSet = new Set(prev);
+      const newTickers = formattedTickers.filter(t => !prevSet.has(t));
       if (newTickers.length === 0) return prev;
 
       return [...prev, ...newTickers];
@@ -182,8 +174,8 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   }, []);
 
   const unwatchTickers = useCallback((tickers: string[]) => {
-    const formattedTickers = tickers.map(t => formatTicker(t));
-    setWatchedTickers(prev => prev.filter(t => !formattedTickers.includes(t)));
+    const formattedTickersSet = new Set(tickers.map(t => formatTicker(t)));
+    setWatchedTickers(prev => prev.filter(t => !formattedTickersSet.has(t)));
   }, []);
 
   const value: TickerDataContextValue = {
