@@ -83,17 +83,22 @@ export function formatTicker(ticker: string): string {
   return ticker.trim().toUpperCase();
 }
 
+// Cache formatters to avoid repeated instantiation
+const currencyFormatter = new Intl.NumberFormat('en-AU', {
+  style: 'currency',
+  currency: 'AUD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
+const numberFormatter = new Intl.NumberFormat('en-AU');
+
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-AU', {
-    style: 'currency',
-    currency: 'AUD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
+  return currencyFormatter.format(value);
 }
 
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en-AU').format(value);
+  return numberFormatter.format(value);
 }
 
 export function formatMarketValue(value: number): string {

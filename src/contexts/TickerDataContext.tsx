@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
   useRef,
+  useMemo,
   ReactNode
 } from 'react';
 import { formatTicker } from '@/lib/api';
@@ -62,36 +63,47 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
 
   const multipleQuoteQuery = useMultipleQuoteData(watchedTickers);
 
-  const getQuoteData = (ticker: string): QuoteData | null => {
-    if (!multipleQuoteQuery.data) return null;
+  // Memoize quote data lookup map for faster access
+  const quoteDataMap = useMemo(() => {
+    if (!multipleQuoteQuery.data) return new Map();
+    
+    const map = new Map<string, QuoteData | null>();
+    multipleQuoteQuery.data.forEach(result => {
+      map.set(result.ticker, result.data);
+    });
+    return map;
+  }, [multipleQuoteQuery.data]);
 
-    const tickerData = multipleQuoteQuery.data.find(
-      result => result.ticker === formatTicker(ticker)
-    );
+  // Memoize error lookup map
+  const errorMap = useMemo(() => {
+    if (!multipleQuoteQuery.data) return new Map();
+    
+    const map = new Map<string, Error | null>();
+    multipleQuoteQuery.data.forEach(result => {
+      map.set(result.ticker, result.error);
+    });
+    return map;
+  }, [multipleQuoteQuery.data]);
 
-    return tickerData?.data || null;
-  };
+  const getQuoteData = useCallback((ticker: string): QuoteData | null => {
+    return quoteDataMap.get(formatTicker(ticker)) || null;
+  }, [quoteDataMap]);
 
   const isLoading = multipleQuoteQuery.isLoading;
 
-  const isTickerLoading = (tickers: string[]): boolean => {
+  const isTickerLoading = useCallback((tickers: string[]): boolean => {
     if (!multipleQuoteQuery.isQuoteLoading) return false;
     return tickers.some(ticker => {
       const formattedTicker = formatTicker(ticker);
       if (!watchedTickers.includes(formattedTicker)) return false;
       return multipleQuoteQuery.isQuoteLoading(ticker);
     });
-  };
+  }, [multipleQuoteQuery, watchedTickers]);
 
-  const error = (ticker: string): Error | null => {
+  const error = useCallback((ticker: string): Error | null => {
     if (!multipleQuoteQuery.data) return multipleQuoteQuery.error;
-
-    const tickerData = multipleQuoteQuery.data.find(
-      result => result.ticker === formatTicker(ticker)
-    );
-
-    return tickerData?.error || null;
-  };
+    return errorMap.get(formatTicker(ticker)) || null;
+  }, [errorMap, multipleQuoteQuery.data, multipleQuoteQuery.error]);
 
   const cleanupTickers = useCallback(() => {
     const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);

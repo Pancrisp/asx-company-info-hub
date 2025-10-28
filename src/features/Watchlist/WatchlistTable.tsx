@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useMemo } from 'react';
 import { TrashIcon, BookmarkIcon } from '@heroicons/react/24/outline';
 import {
   formatCurrency,
@@ -53,16 +53,20 @@ export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) 
   const { getQuoteData, isTickerLoading } = useTickerPrice();
   const isWatchlistLoading = isTickerLoading(watchlist);
 
-  const watchlistData = watchlist.map(ticker => {
-    const quoteData = getQuoteData(ticker);
-    return {
-      ticker,
-      quoteData,
-      hasData: !!quoteData
-    };
-  });
+  const watchlistData = useMemo(() => {
+    return watchlist.map(ticker => {
+      const quoteData = getQuoteData(ticker);
+      return {
+        ticker,
+        quoteData,
+        hasData: !!quoteData
+      };
+    });
+  }, [watchlist, getQuoteData]);
 
-  const validData = watchlistData.filter(item => item.hasData);
+  const validData = useMemo(() => {
+    return watchlistData.filter(item => item.hasData);
+  }, [watchlistData]);
 
   let tableContent;
 

@@ -1,15 +1,18 @@
 import { useQuery, useQueries } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { fetchCompanyInformation, fetchQuoteData } from '@/lib/api';
 
-const isMarketHours = () => {
-  const now = new Date();
-  const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-  const hours = sydneyTime.getHours();
-  const dayOfWeek = sydneyTime.getDay();
-  const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-  const isTradingHours = hours >= 10 && hours < 16;
+const useIsMarketHours = () => {
+  return useMemo(() => {
+    const now = new Date();
+    const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+    const hours = sydneyTime.getHours();
+    const dayOfWeek = sydneyTime.getDay();
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+    const isTradingHours = hours >= 10 && hours < 16;
 
-  return isWeekday && isTradingHours;
+    return isWeekday && isTradingHours;
+  }, []);
 };
 
 export function useCompanyInformation(ticker: string) {
@@ -25,19 +28,17 @@ export function useCompanyInformation(ticker: string) {
 }
 
 export function useMultipleQuoteData(tickers: string[]) {
+  const isMarketHours = useIsMarketHours();
+  
   const queries = useQueries({
     queries: tickers.map(ticker => ({
       queryKey: ['quoteData', ticker.toUpperCase()],
       queryFn: () => fetchQuoteData(ticker),
       enabled: !!ticker && ticker.length >= 3,
-      staleTime: () => {
-        return isMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
-      },
+      staleTime: isMarketHours ? 3 * 60 * 1000 : 60 * 60 * 1000,
       gcTime: 2 * 60 * 60 * 1000,
       retry: 1,
-      refetchInterval: () => {
-        return isMarketHours() ? 2 * 60 * 1000 : 60 * 60 * 1000;
-      },
+      refetchInterval: isMarketHours ? 2 * 60 * 1000 : 60 * 60 * 1000,
       refetchIntervalInBackground: false
     }))
   });

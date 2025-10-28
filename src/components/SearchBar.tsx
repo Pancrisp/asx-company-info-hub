@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Combobox,
   ComboboxInput,
@@ -38,14 +38,17 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const filteredStocks =
-    inputValue === ''
-      ? POPULAR_STOCKS
-      : POPULAR_STOCKS.filter(
-          stock =>
-            stock.ticker.toLowerCase().includes(inputValue.toLowerCase()) ||
-            stock.name.toLowerCase().includes(inputValue.toLowerCase())
-        );
+  const filteredStocks = useMemo(() => {
+    if (inputValue === '') {
+      return POPULAR_STOCKS;
+    }
+    const lowerInput = inputValue.toLowerCase();
+    return POPULAR_STOCKS.filter(
+      stock =>
+        stock.ticker.toLowerCase().includes(lowerInput) ||
+        stock.name.toLowerCase().includes(lowerInput)
+    );
+  }, [inputValue]);
 
   const handleSearch = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {

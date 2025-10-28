@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { formatCurrency, formatPercentage } from '@/lib/api';
 import { useTickerPrice } from '@/contexts/TickerDataContext';
 
@@ -10,6 +11,19 @@ interface StockItemProps {
   onClick: () => void;
 }
 
+// Helper functions extracted outside component to avoid recreating on every render
+const getPriceChangeStyle = (change: number | undefined, percentage: number | undefined) => {
+  if (!change || !percentage) return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
+  if (percentage > 0) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
+  if (percentage < 0) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
+  return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
+};
+
+const getChangeDirection = (change: number | undefined, percentage: number | undefined) => {
+  if (!change || !percentage) return 'neutral';
+  return percentage > 0 ? 'positive' : percentage < 0 ? 'negative' : 'neutral';
+};
+
 export default function StockItem({ ticker, name, isLoading, onClick }: StockItemProps) {
   const { getQuoteData, error } = useTickerPrice();
   const quoteData = getQuoteData(ticker);
@@ -18,19 +32,9 @@ export default function StockItem({ ticker, name, isLoading, onClick }: StockIte
   const price = quoteData?.cf_last;
   const change = quoteData?.cf_netchng;
   const percentage = quoteData?.pctchng;
-  const priceChangeColourPicker = () => {
-    if (!change || !percentage) return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
-    if (percentage > 0) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
-    if (percentage < 0) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
-    return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
-  };
-
-  const priceChangeStyle = priceChangeColourPicker();
-
-  const changeDirection = () => {
-    if (!change || !percentage) return 'neutral';
-    return percentage > 0 ? 'positive' : percentage < 0 ? 'negative' : 'neutral';
-  };
+  
+  const priceChangeStyle = useMemo(() => getPriceChangeStyle(change, percentage), [change, percentage]);
+  const changeDirection = useMemo(() => getChangeDirection(change, percentage), [change, percentage]);
 
   if (isLoading) {
     return (
@@ -81,7 +85,7 @@ export default function StockItem({ ticker, name, isLoading, onClick }: StockIte
       className='w-full border-b border-gray-300 bg-white px-4 py-3 text-left transition-all duration-100 first:rounded-t-md last:rounded-b-md last:border-b-0 hover:cursor-pointer hover:bg-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
       data-testid='stock-item'
       data-ticker={ticker}
-      data-price-direction={changeDirection()}
+      data-price-direction={changeDirection}
       data-interactive='true'
     >
       <div className='flex items-center justify-between'>

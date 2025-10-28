@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useCallback } from 'react';
 import { POPULAR_STOCKS } from '@/data/stocks';
 import { useTickerPrice } from '@/contexts/TickerDataContext';
 import StockItem from './StockItem';
@@ -14,9 +14,9 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
   const isTrendingTickersLoading = isTickerLoading(trendingTickers);
 
-  const getStockByTicker = (ticker: string) => {
+  const getStockByTicker = useCallback((ticker: string) => {
     return POPULAR_STOCKS.find(stock => stock.ticker === ticker);
-  };
+  }, []);
 
   return (
     <Fragment>
