@@ -14,7 +14,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
   const isTrendingTickersLoading = isTickerLoading(trendingTickers);
 
-  const getStockByTicker = (ticker: string) => {
+  const findStockByTicker = (ticker: string) => {
     return POPULAR_STOCKS.find(stock => stock.ticker === ticker);
   };
 
@@ -27,7 +27,7 @@ export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
         data-testid="trending-stocks-container"
       >
         {trendingTickers.map(ticker => {
-          const stock = getStockByTicker(ticker);
+          const stock = findStockByTicker(ticker);
 
           if (!stock) return null;
 

@@ -111,16 +111,16 @@ export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) 
       if (!item.quoteData) return null;
 
       const { quoteData } = item;
-      const isPositive = quoteData.cf_netchng > 0;
-      const isNegative = quoteData.cf_netchng < 0;
+      const isPriceIncreasing = quoteData.cf_netchng > 0;
+      const isPriceDecreasing = quoteData.cf_netchng < 0;
 
-      const priceChangeColor = isPositive
+      const priceChangeColor = isPriceIncreasing
         ? 'text-green-600'
-        : isNegative
+        : isPriceDecreasing
           ? 'text-red-600'
           : 'text-gray-600';
 
-      const changeDirection = isPositive ? 'positive' : isNegative ? 'negative' : 'neutral';
+      const changeDirection = isPriceIncreasing ? 'positive' : isPriceDecreasing ? 'negative' : 'neutral';
 
       return (
         <tr
@@ -130,9 +130,9 @@ export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) 
           role='button'
           tabIndex={0}
           aria-label={`View details for ${item.ticker}`}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
               onTickerSelect?.(item.ticker);
             }
           }}
@@ -170,12 +170,12 @@ export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) 
             <button
               className='rounded p-1 transition-colors hover:bg-gray-100'
               aria-label={`Remove ${item.ticker} from watchlist`}
-              onClick={e => {
-                e.stopPropagation();
+              onClick={event => {
+                event.stopPropagation();
                 removeFromWatchlist(item.ticker);
               }}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
                   removeFromWatchlist(item.ticker);
                 }
               }}
