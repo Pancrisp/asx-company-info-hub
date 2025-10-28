@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { POPULAR_STOCKS } from '@/data/stocks';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { useTickerDataContext } from '@/contexts/TickerDataContext';
 import StockItem from './StockItem';
 
 interface TrendingStocksProps {
@@ -10,7 +10,7 @@ interface TrendingStocksProps {
 }
 
 export default function TrendingStocks({ onStockSelect }: TrendingStocksProps) {
-  const { isTickerLoading } = useTickerPrice();
+  const { isTickerLoading } = useTickerDataContext();
   const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
   const isTrendingTickersLoading = isTickerLoading(trendingTickers);
 

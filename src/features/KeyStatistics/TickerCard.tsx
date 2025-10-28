@@ -14,7 +14,7 @@ import {
 } from '@/lib/api';
 import { QuoteData, CompanyData } from '@/types/schema';
 import { useWatchlist } from '@/hooks/useWatchlist';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { useTickerDataContext } from '@/contexts/TickerDataContext';
 import { Skeleton } from '../../components/Skeleton';
 import RangeBar from './RangeBar';
 import TickerMetrics from './TickerMetrics';
@@ -34,7 +34,7 @@ export default function TickerCard({
   showEmptyState = false
 }: TickerCardProps) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
-  const { setCurrentlyDisplayedTicker } = useTickerPrice();
+  const { setCurrentlyDisplayedTicker } = useTickerDataContext();
 
   useEffect(() => {
     const ticker = companyData?.ticker;

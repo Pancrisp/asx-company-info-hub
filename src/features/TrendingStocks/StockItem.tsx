@@ -1,7 +1,7 @@
 'use client';
 
 import { formatCurrency, formatPercentage } from '@/lib/api';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { useTickerDataContext } from '@/contexts/TickerDataContext';
 
 interface StockItemProps {
   ticker: string;
@@ -11,7 +11,7 @@ interface StockItemProps {
 }
 
 export default function StockItem({ ticker, name, isLoading, onClick }: StockItemProps) {
-  const { getQuoteData, error } = useTickerPrice();
+  const { getQuoteData, error } = useTickerDataContext();
   const quoteData = getQuoteData(ticker);
   const tickerError = error(ticker);
 

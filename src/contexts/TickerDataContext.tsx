@@ -189,16 +189,16 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   return <TickerDataContext.Provider value={value}>{children}</TickerDataContext.Provider>;
 }
 
-export function useTickerPrice() {
+export function useTickerDataContext() {
   const context = useContext(TickerDataContext);
   if (context === undefined) {
-    throw new Error('useTickerPrice must be used within a TickerDataProvider');
+    throw new Error('useTickerDataContext must be used within a TickerDataProvider');
   }
   return context;
 }
 
 export function useTickerData(ticker: string) {
-  const context = useTickerPrice();
+  const context = useTickerDataContext();
   const { getQuoteData, isTickerLoading, error, watchTickers } = context;
   const companyQuery = useCompanyInformation(ticker);
 

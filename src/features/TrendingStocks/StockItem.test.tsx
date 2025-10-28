@@ -5,7 +5,7 @@ const mockGetQuoteData = jest.fn();
 const mockError = jest.fn();
 
 jest.mock('@/contexts/TickerDataContext', () => ({
-  useTickerPrice: () => ({
+  useTickerDataContext: () => ({
     getQuoteData: mockGetQuoteData,
     error: mockError
   })

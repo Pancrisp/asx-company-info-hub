@@ -10,7 +10,7 @@ import {
   formatVolume
 } from '@/lib/api';
 import { useWatchlist } from '@/hooks/useWatchlist';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { useTickerDataContext } from '@/contexts/TickerDataContext';
 
 import { Skeleton } from '../../components/Skeleton';
 import WatchlistRangeBar from './WatchlistRangeBar';
@@ -50,7 +50,7 @@ const WatchlistTableHeaders = () => (
 
 export default function WatchlistTable({ onTickerSelect }: WatchlistTableProps) {
   const { watchlist, removeFromWatchlist } = useWatchlist();
-  const { getQuoteData, isTickerLoading } = useTickerPrice();
+  const { getQuoteData, isTickerLoading } = useTickerDataContext();
   const isWatchlistLoading = isTickerLoading(watchlist);
 
   const watchlistData = watchlist.map(ticker => {

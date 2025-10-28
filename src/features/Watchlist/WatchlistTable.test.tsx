@@ -6,7 +6,7 @@ const mockGetQuoteData = jest.fn();
 const mockIsTickerLoading = jest.fn();
 
 jest.mock('@/contexts/TickerDataContext', () => ({
-  useTickerPrice: () => ({
+  useTickerDataContext: () => ({
     getQuoteData: mockGetQuoteData,
     isTickerLoading: mockIsTickerLoading
   })

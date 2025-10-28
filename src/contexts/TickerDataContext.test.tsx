@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TickerDataProvider, useTickerPrice, useTickerData } from './TickerDataContext';
+import { TickerDataProvider, useTickerDataContext, useTickerData } from './TickerDataContext';
 import { POPULAR_STOCKS } from '@/data/stocks';
 import * as useTickerDataModule from '@/hooks/useTickerData';
 
@@ -53,7 +53,7 @@ describe('TickerDataContext', () => {
   describe('Provider initialization', () => {
     it('should initialize with trending stocks', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       expect(result.current.watchedTickers).toEqual(trendingTickers);
@@ -64,7 +64,7 @@ describe('TickerDataContext', () => {
       localStorage.setItem('asx-watchlist', JSON.stringify(storedTickers));
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       const expectedTickers = [...trendingTickers, ...storedTickers];
@@ -78,7 +78,7 @@ describe('TickerDataContext', () => {
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       expect(result.current.watchedTickers).toEqual(trendingTickers);
@@ -94,7 +94,7 @@ describe('TickerDataContext', () => {
       localStorage.setItem('asx-watchlist', JSON.stringify({ not: 'array' }));
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       expect(result.current.watchedTickers).toEqual(trendingTickers);
@@ -105,7 +105,7 @@ describe('TickerDataContext', () => {
       localStorage.setItem('asx-watchlist', JSON.stringify(storedTickers));
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       const expectedTickers = [...trendingTickers, 'TST'];
@@ -118,7 +118,7 @@ describe('TickerDataContext', () => {
   describe('watchTickers functionality', () => {
     it('should add new tickers to watchlist', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST1', 'TEST2']);
@@ -130,7 +130,7 @@ describe('TickerDataContext', () => {
 
     it('should convert tickers to uppercase', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['test1', 'test2']);
@@ -144,7 +144,7 @@ describe('TickerDataContext', () => {
 
     it('should not add duplicate tickers', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST']);
@@ -162,7 +162,7 @@ describe('TickerDataContext', () => {
 
     it('should handle empty array input', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const initialTickers = [...result.current.watchedTickers];
 
@@ -177,7 +177,7 @@ describe('TickerDataContext', () => {
   describe('unwatchTickers functionality', () => {
     it('should remove tickers from watchlist', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST1', 'TEST2']);
@@ -193,7 +193,7 @@ describe('TickerDataContext', () => {
 
     it('should convert tickers to uppercase when removing', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST']);
@@ -208,7 +208,7 @@ describe('TickerDataContext', () => {
 
     it('should handle removing non-existent tickers gracefully', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const initialTickers = [...result.current.watchedTickers];
 
@@ -221,7 +221,7 @@ describe('TickerDataContext', () => {
 
     it('should handle empty array input', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const initialTickers = [...result.current.watchedTickers];
 
@@ -236,7 +236,7 @@ describe('TickerDataContext', () => {
   describe('getQuoteData functionality', () => {
     it('should return null when no data available', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const quoteData = result.current.getQuoteData('CBA');
       expect(quoteData).toBeNull();
@@ -267,7 +267,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const quoteData = result.current.getQuoteData('CBA');
       expect(quoteData).toEqual(mockQuoteData);
@@ -298,7 +298,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const quoteData = result.current.getQuoteData('cba');
       expect(quoteData).toEqual(mockQuoteData);
@@ -315,7 +315,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       expect(result.current.isLoading).toBe(true);
     });
@@ -331,7 +331,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       expect(result.current.isTickerLoading(['CBA'])).toBe(true);
       expect(result.current.isTickerLoading(['WBC'])).toBe(false);
@@ -348,7 +348,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       expect(result.current.isTickerLoading(['UNWATCHED'])).toBe(false);
     });
@@ -366,7 +366,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       expect(result.current.error('CBA')).toBe(mockError);
     });
@@ -382,7 +382,7 @@ describe('TickerDataContext', () => {
       });
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       expect(result.current.error('CBA')).toBe(mockError);
     });
@@ -402,7 +402,7 @@ describe('TickerDataContext', () => {
     it('should not watch ticker if already being watched', async () => {
       const Wrapper = createWrapper();
 
-      const { result: contextResult } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result: contextResult } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         contextResult.current.watchTickers(['TEST']);
@@ -417,12 +417,12 @@ describe('TickerDataContext', () => {
   });
 
   describe('context error handling', () => {
-    it('should throw error when useTickerPrice used outside provider', () => {
+    it('should throw error when useTickerDataContext used outside provider', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       expect(() => {
-        renderHook(() => useTickerPrice());
-      }).toThrow('useTickerPrice must be used within a TickerDataProvider');
+        renderHook(() => useTickerDataContext());
+      }).toThrow('useTickerDataContext must be used within a TickerDataProvider');
 
       consoleSpy.mockRestore();
     });
@@ -431,7 +431,7 @@ describe('TickerDataContext', () => {
   describe('setCurrentlyDisplayedTicker functionality', () => {
     it('should set currently displayed ticker', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.setCurrentlyDisplayedTicker('TEST');
@@ -442,7 +442,7 @@ describe('TickerDataContext', () => {
 
     it('should clear currently displayed ticker', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.setCurrentlyDisplayedTicker('TEST');
@@ -467,7 +467,7 @@ describe('TickerDataContext', () => {
 
     it('should preserve trending stocks during cleanup', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST']);
@@ -491,7 +491,7 @@ describe('TickerDataContext', () => {
       localStorage.setItem('asx-watchlist', JSON.stringify(storedTickers));
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEMP']);
@@ -509,7 +509,7 @@ describe('TickerDataContext', () => {
 
     it('should preserve currently displayed ticker during cleanup', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['DISPLAYED']);
@@ -529,7 +529,7 @@ describe('TickerDataContext', () => {
 
     it('should remove expired temporary tickers during cleanup', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEMP']);
@@ -548,7 +548,7 @@ describe('TickerDataContext', () => {
 
     it('should keep recent temporary tickers during cleanup', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['RECENT']);
@@ -577,7 +577,7 @@ describe('TickerDataContext', () => {
 
     it('should run cleanup periodically', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEMP']);
@@ -597,7 +597,7 @@ describe('TickerDataContext', () => {
       const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
 
       const Wrapper = createWrapper();
-      const { unmount } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { unmount } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       unmount();
 
@@ -617,7 +617,7 @@ describe('TickerDataContext', () => {
 
     it('should track timestamp when tickers are watched', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TRACKED']);
@@ -636,7 +636,7 @@ describe('TickerDataContext', () => {
 
     it('should update timestamp on repeated watch calls', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['REFRESHED']);
@@ -665,7 +665,7 @@ describe('TickerDataContext', () => {
   describe('integration with React Query', () => {
     it('should call useMultipleQuoteData with watched tickers', () => {
       const Wrapper = createWrapper();
-      renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       const trendingTickers = POPULAR_STOCKS.slice(0, 6).map(stock => stock.ticker);
       expect(mockUseMultipleQuoteData).toHaveBeenCalledWith(trendingTickers);
@@ -673,7 +673,7 @@ describe('TickerDataContext', () => {
 
     it('should update React Query when tickers are added', () => {
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTickerPrice(), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTickerDataContext(), { wrapper: Wrapper });
 
       act(() => {
         result.current.watchTickers(['TEST']);
