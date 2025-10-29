@@ -35,7 +35,7 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
     }
   }, []);
 
-  const saveToStorage = useCallback((newWatchlist: string[]) => {
+  const saveWatchlistToLocalStorage = useCallback((newWatchlist: string[]) => {
     try {
       localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(newWatchlist));
     } catch (error) {
@@ -51,23 +51,23 @@ export function WatchlistProvider({ children }: WatchlistProviderProps) {
           return prev;
         }
         const newWatchlist = [...prev, newTicker];
-        saveToStorage(newWatchlist);
+        saveWatchlistToLocalStorage(newWatchlist);
         return newWatchlist;
       });
     },
-    [saveToStorage]
+    [saveWatchlistToLocalStorage]
   );
 
   const removeFromWatchlist = useCallback(
     (ticker: string) => {
       const newTicker = ticker.toUpperCase();
       setWatchlist(prev => {
-        const newWatchlist = prev.filter(t => t !== newTicker);
-        saveToStorage(newWatchlist);
+        const newWatchlist = prev.filter(ticker => ticker !== newTicker);
+        saveWatchlistToLocalStorage(newWatchlist);
         return newWatchlist;
       });
     },
-    [saveToStorage]
+    [saveWatchlistToLocalStorage]
   );
 
   const isInWatchlist = useCallback(

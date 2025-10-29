@@ -16,7 +16,7 @@ jest.mock('@/hooks/useWatchlist', () => ({
 }));
 
 jest.mock('@/contexts/TickerDataContext', () => ({
-  useTickerPrice: () => ({
+  useTickerDataContext: () => ({
     setCurrentlyDisplayedTicker: mockSetCurrentlyDisplayedTicker
   })
 }));

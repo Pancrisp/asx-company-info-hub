@@ -14,7 +14,7 @@ import {
 } from '@/lib/api';
 import { QuoteData, CompanyData } from '@/types/schema';
 import { useWatchlist } from '@/hooks/useWatchlist';
-import { useTickerPrice } from '@/contexts/TickerDataContext';
+import { useTickerDataContext } from '@/contexts/TickerDataContext';
 import { Skeleton } from '../../components/Skeleton';
 import RangeBar from './RangeBar';
 import TickerMetrics from './TickerMetrics';
@@ -34,7 +34,7 @@ export default function TickerCard({
   showEmptyState = false
 }: TickerCardProps) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist();
-  const { setCurrentlyDisplayedTicker } = useTickerPrice();
+  const { setCurrentlyDisplayedTicker } = useTickerDataContext();
 
   useEffect(() => {
     const ticker = companyData?.ticker;
@@ -123,12 +123,12 @@ export default function TickerCard({
   const ticker = companyData?.ticker || '';
   const inWatchlist = isInWatchlist(ticker);
   const percentFromHigh = ((quoteData.yrhigh - quoteData.cf_last) / quoteData.yrhigh) * 100;
-  const isPositive = quoteData.cf_netchng > 0;
-  const isNegative = quoteData.cf_netchng < 0;
+  const isPriceIncreasing = quoteData.cf_netchng > 0;
+  const isPriceDecreasing = quoteData.cf_netchng < 0;
 
   const priceChangeColourPicker = () => {
-    if (isPositive) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
-    if (isNegative) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
+    if (isPriceIncreasing) return { bg: 'bg-green-100', color: 'var(--positive-green)' };
+    if (isPriceDecreasing) return { bg: 'bg-red-100', color: 'var(--negative-red)' };
     return { bg: 'bg-gray-100', color: 'var(--unchanged-gray)' };
   };
 

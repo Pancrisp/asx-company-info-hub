@@ -1,7 +1,7 @@
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchCompanyInformation, fetchQuoteData } from '@/lib/api';
 
-const isMarketHours = () => {
+const isAustralianMarketHours = () => {
   const now = new Date();
   const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
   const hours = sydneyTime.getHours();
@@ -31,23 +31,23 @@ export function useMultipleQuoteData(tickers: string[]) {
       queryFn: () => fetchQuoteData(ticker),
       enabled: !!ticker && ticker.length >= 3,
       staleTime: () => {
-        return isMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
+        return isAustralianMarketHours() ? 3 * 60 * 1000 : 60 * 60 * 1000;
       },
       gcTime: 2 * 60 * 60 * 1000,
       retry: 1,
       refetchInterval: () => {
-        return isMarketHours() ? 2 * 60 * 1000 : 60 * 60 * 1000;
+        return isAustralianMarketHours() ? 2 * 60 * 1000 : 60 * 60 * 1000;
       },
       refetchIntervalInBackground: false
     }))
   });
 
-  const tickerIndexMap = new Map<string, number>();
+  const tickerToIndexMap = new Map<string, number>();
   tickers.forEach((ticker, index) => {
-    tickerIndexMap.set(ticker.toUpperCase(), index);
+    tickerToIndexMap.set(ticker.toUpperCase(), index);
   });
 
-  const data = queries.map((query, index) => ({
+  const queryResults = queries.map((query, index) => ({
     ticker: tickers[index].toUpperCase(),
     data: query.data || null,
     error: query.error || null
@@ -57,10 +57,10 @@ export function useMultipleQuoteData(tickers: string[]) {
   const error = queries.find(query => query.error)?.error || null;
 
   const isQuoteLoading = (ticker: string): boolean => {
-    const index = tickerIndexMap.get(ticker.toUpperCase());
+    const index = tickerToIndexMap.get(ticker.toUpperCase());
     if (index === undefined) return false;
     return queries[index]?.isLoading || false;
   };
 
-  return { data, isLoading, isQuoteLoading, error };
+  return { data: queryResults, isLoading, isQuoteLoading, error };
 }

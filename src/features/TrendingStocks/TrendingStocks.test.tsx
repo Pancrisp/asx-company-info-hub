@@ -7,7 +7,7 @@ const mockIsTickerLoading = jest.fn();
 const mockError = jest.fn();
 
 jest.mock('@/contexts/TickerDataContext', () => ({
-  useTickerPrice: () => ({
+  useTickerDataContext: () => ({
     getQuoteData: mockGetQuoteData,
     isTickerLoading: mockIsTickerLoading,
     error: mockError

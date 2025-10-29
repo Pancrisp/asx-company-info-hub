@@ -17,10 +17,10 @@ export default function RangeBar({
   lowPrice,
   currentPrice
 }: RangeBarProps) {
-  const isPositive = currentPrice >= openPrice;
+  const isPriceIncreasing = currentPrice >= openPrice;
 
-  const openPercentage = ((openPrice - lowPrice) / (highPrice - lowPrice)) * 100;
-  const currentPercentage = ((currentPrice - lowPrice) / (highPrice - lowPrice)) * 100;
+  const openPositionPercentage = ((openPrice - lowPrice) / (highPrice - lowPrice)) * 100;
+  const currentPositionPercentage = ((currentPrice - lowPrice) / (highPrice - lowPrice)) * 100;
 
   return (
     <div className='mb-6' data-testid='range-bar-container'>
@@ -34,9 +34,9 @@ export default function RangeBar({
           data-testid='range-progress'
           className='absolute top-0 h-2'
           style={{
-            left: `${Math.min(openPercentage, currentPercentage)}%`,
-            width: `${Math.abs(currentPercentage - openPercentage)}%`,
-            backgroundColor: isPositive ? 'var(--positive-green)' : 'var(--negative-red)'
+            left: `${Math.min(openPositionPercentage, currentPositionPercentage)}%`,
+            width: `${Math.abs(currentPositionPercentage - openPositionPercentage)}%`,
+            backgroundColor: isPriceIncreasing ? 'var(--positive-green)' : 'var(--negative-red)'
           }}
         />
       </div>

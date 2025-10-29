@@ -20,7 +20,7 @@ interface SearchComponentProps {
   error: string;
 }
 
-export default function Search({ onSearch, loading, error }: SearchComponentProps) {
+export default function SearchBar({ onSearch, loading, error }: SearchComponentProps) {
   const [validationError, setValidationError] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
@@ -47,13 +47,13 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
             stock.name.toLowerCase().includes(inputValue.toLowerCase())
         );
 
-  const handleSearch = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+  const handleSearch = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
       inputRef.current?.blur();
       return;
     }
 
-    if (e.key !== 'Enter') return;
+    if (event.key !== 'Enter') return;
 
     const stock = formatTicker(inputValue);
 
@@ -76,7 +76,7 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
     });
   };
 
-  const handleInputChange = (value: string) => {
+  const handleSearchInputChange = (value: string) => {
     const formattedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     setInputValue(formattedValue);
@@ -114,7 +114,7 @@ export default function Search({ onSearch, loading, error }: SearchComponentProp
             ref={inputRef}
             className='w-full rounded-md border border-gray-300 py-3 pr-16 pl-10 text-sm text-gray-900 placeholder-gray-500'
             value={inputValue}
-            onChange={e => handleInputChange(e.target.value)}
+            onChange={e => handleSearchInputChange(e.target.value)}
             onKeyDown={e => handleSearch(e)}
             placeholder='Search for an ASX stock'
             disabled={loading}

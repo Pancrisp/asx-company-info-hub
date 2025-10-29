@@ -44,11 +44,11 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     const watchlistedTickers: string[] = [];
     try {
       if (typeof window !== 'undefined') {
-        const tickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
-        if (tickers) {
-          const parsedTickers = JSON.parse(tickers);
+        const storedTickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+        if (storedTickers) {
+          const parsedTickers = JSON.parse(storedTickers);
           if (Array.isArray(parsedTickers)) {
-            watchlistedTickers.push(...parsedTickers.map(t => formatTicker(t)));
+            watchlistedTickers.push(...parsedTickers.map(ticker => formatTicker(ticker)));
           }
         }
       }
@@ -99,11 +99,11 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     let watchlistedTickers: string[] = [];
     try {
       if (typeof window !== 'undefined') {
-        const tickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
-        if (tickers) {
-          const parsedTickers = JSON.parse(tickers);
+        const storedTickers = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+        if (storedTickers) {
+          const parsedTickers = JSON.parse(storedTickers);
           if (Array.isArray(parsedTickers)) {
-            watchlistedTickers = parsedTickers.map(t => formatTicker(t));
+            watchlistedTickers = parsedTickers.map(ticker => formatTicker(ticker));
           }
         }
       }
@@ -112,7 +112,7 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
     }
 
     const persistentTickers = [...trendingTickers, ...watchlistedTickers];
-    const persistentTickersSet = new Set(persistentTickers.map(t => formatTicker(t)));
+    const persistentTickersSet = new Set(persistentTickers.map(ticker => formatTicker(ticker)));
     const now = Date.now();
     const THREE_MINUTES = 3 * 60 * 1000;
 
@@ -155,14 +155,14 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   }, [cleanupTickers]);
 
   const watchTickers = useCallback((tickers: string[]) => {
-    const formattedTickers = tickers.map(t => formatTicker(t));
+    const formattedTickers = tickers.map(ticker => formatTicker(ticker));
 
     formattedTickers.forEach(ticker => {
       tickerAccessTimesRef.current.set(ticker, Date.now());
     });
 
     setWatchedTickers(prev => {
-      const newTickers = formattedTickers.filter(t => !prev.includes(t));
+      const newTickers = formattedTickers.filter(ticker => !prev.includes(ticker));
       if (newTickers.length === 0) return prev;
 
       return [...prev, ...newTickers];
@@ -170,8 +170,8 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   }, []);
 
   const unwatchTickers = useCallback((tickers: string[]) => {
-    const formattedTickers = tickers.map(t => formatTicker(t));
-    setWatchedTickers(prev => prev.filter(t => !formattedTickers.includes(t)));
+    const formattedTickers = tickers.map(ticker => formatTicker(ticker));
+    setWatchedTickers(prev => prev.filter(ticker => !formattedTickers.includes(ticker)));
   }, []);
 
   const value: TickerDataContextValue = {
@@ -189,16 +189,16 @@ export function TickerDataProvider({ children }: TickerDataProviderProps) {
   return <TickerDataContext.Provider value={value}>{children}</TickerDataContext.Provider>;
 }
 
-export function useTickerPrice() {
+export function useTickerDataContext() {
   const context = useContext(TickerDataContext);
   if (context === undefined) {
-    throw new Error('useTickerPrice must be used within a TickerDataProvider');
+    throw new Error('useTickerDataContext must be used within a TickerDataProvider');
   }
   return context;
 }
 
 export function useTickerData(ticker: string) {
-  const context = useTickerPrice();
+  const context = useTickerDataContext();
   const { getQuoteData, isTickerLoading, error, watchTickers } = context;
   const companyQuery = useCompanyInformation(ticker);
 
